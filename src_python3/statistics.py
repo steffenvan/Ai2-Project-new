@@ -42,6 +42,10 @@ data = json.load(open(abs_path + file))
 for sentence in data :
     for frame in sentence["frames"] :
         print("*******************")
-        print(frame["target"]["spans"][0]["text"])
-        if len(frame["annotationSets"][0]["frameElements"]) :
-            print(frame["annotationSets"][0]["frameElements"][0]["spans"][0]["text"])
+        print(extract_text(frame))
+        # print(frame["target"]["name"])
+        # print(frame["target"]["spans"][0]["text"])
+        # if len(frame["annotationSets"][0]["frameElements"]) :
+        #     # print(frame["annotationSets"][0]["frameElements"][0]["spans"][0]["text"])
+        #     for elt in frame["annotationSets"][0]["frameElements"] :
+        #         print(elt["spans"][0]["text"])
