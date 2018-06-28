@@ -6,17 +6,21 @@ import json
 This file allows the extracion of only specific sections of json / txt files
 """
 
+
+
 def extract_text(frame, vocab = [], stopwords = [], punct = []) :      # given a frame, extract all the text from frameElements / spans
     tokens = []
     for fe in frame["annotationSets"][0]["frameElements"] :
+        # print(fe)
         
-        tokens += fe["spans"][0]["text"].split()
+        tokens += fe["spans"][0]["text"]
+        print(tokens)
     
     tokens += frame["target"]["spans"][0]["text"]
     
     
         
-    L = list(map(str.lower,list(set(tokens))))
+    # L = list(map(str.lower,list(set(tokens))))
     
     if len(stopwords+punct) :
         L = [elt for elt in L if elt not in stopwords+punct+list(" ")]    # remove stopwords / punctuation if specified 
@@ -24,7 +28,7 @@ def extract_text(frame, vocab = [], stopwords = [], punct = []) :      # given a
     if len(vocab) :
         L = [elt for elt in L if elt in vocab]                            # only keep words from a specified vocabulary if specified
         
-    return L
+    return tokens
 
 def abstract_json(json_file) :                    # returns the part of the json semafor output correspounding to the abstract
     full_output = json.load(open(json_file))
