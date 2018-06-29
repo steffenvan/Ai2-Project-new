@@ -32,3 +32,6 @@ Contains functions to extract specific sections from text or json files.
 
 `preprocess_functions.py`:
 Contains all the functions called by pipeline.py and article.py.
+
+'build_matrix2.py' :
+build_matrix() function for creating the dataframe counting the frames appearing in each documents. Only the relevant frames (see the list at the top of the script) are taken into an account.
