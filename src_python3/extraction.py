@@ -1,13 +1,16 @@
 from path import root
 import json
 import string
+import spacy
 
 
 """
 This file allows the extracion of only specific sections of json / txt files
 """
 
-def extract_text(frame, vocab = [], stopwords = [], punct = []) :      # given a frame, extract all the text from frameElements / spans
+nlp = spacy.load("en")
+
+def extract_text(frame) :      # given a frame, extract all the text from frameElements / spans
     tokens_annot = []
     tokens_name = []
     tokens_target = []
@@ -27,17 +30,35 @@ def extract_text(frame, vocab = [], stopwords = [], punct = []) :      # given a
     output["name"] = frame["target"]["name"]
                 
     return output
-            
-    
-    
+
+
+def extract_with_pos(frame, to_keep = ["ADJ","NOUN"]) : 
         
-    if len(stopwords+punct) :
-        tokens = [elt for elt in L if elt not in stopwords+punct+list(" ")]    # remove stopwords / punctuation if specified 
+        tokens_annot = []
+        tokens_name = []
+        tokens_target = []
+        output  = {}
+        text_target = nlp(frame["target"]["spans"][0]["text"])
+        for token in text_target :
+            if token.pos_ in to_keep :
+                tokens_target.append(token.text.lower())        
+        output["target"] = tokens_target
         
-    if len(vocab) :
-        tokens = [elt for elt in L if elt in vocab]                            # only keep words from a specified vocabulary if specified
+        if len(frame["annotationSets"][0]["frameElements"]) :
+            for elt in frame["annotationSets"][0]["frameElements"] :
+                # print(elt["spans"][0]["text"])
+                text_annot = nlp(elt["spans"][0]["text"])
+                for token in text_annot :
+                    if token.pos_ in to_keep :
+                        tokens_annot.append(token.text.lower())
+                
         
-    # return [tokens_target, tokens_annot]
+        output["annot"] = tokens_annot
+        
+        output["name"] = frame["target"]["name"]
+                    
+        return output
+
 
 def abstract_json(json_file) :                    # returns the part of the json semafor output correspounding to the abstract
     full_output = json.load(open(json_file))
