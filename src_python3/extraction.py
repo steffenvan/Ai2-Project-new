@@ -1,5 +1,6 @@
 from path import root
 import json
+import string
 
 
 """
@@ -10,21 +11,26 @@ def extract_text(frame, vocab = [], stopwords = [], punct = []) :      # given a
     tokens_annot = []
     tokens_name = []
     tokens_target = []
-    tokens_target += (str(frame["target"]["spans"][0]["text"]))
+    output  = {}
+    tokens_target = list(map(str.lower,frame["target"]["spans"][0]["text"].split()))
+    output["target"] = tokens_target
+    
     if len(frame["annotationSets"][0]["frameElements"]) :
         for elt in frame["annotationSets"][0]["frameElements"] :
             # print(elt["spans"][0]["text"])
             for word in elt["spans"][0]["text"].split(" ") :
                 if word.lower() not in ["<","newsection", ">","abstract"] :
-                    tokens_annot.append(word)  
+                    tokens_annot.append(word.lower())  
+    
+    output["annot"] = tokens_annot
+    
+    output["name"] = frame["target"]["name"]
                 
-            print(tokens_annot)
+    return output
             
     
     
         
-    # L = list(map(str.lower,list(set(tokens))))
-    
     if len(stopwords+punct) :
         tokens = [elt for elt in L if elt not in stopwords+punct+list(" ")]    # remove stopwords / punctuation if specified 
         

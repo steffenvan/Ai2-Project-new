@@ -9,9 +9,9 @@ from path import root
 to add new xml files to the database, simply drag them to data/xml/ and then run this script
 """
 
-xml_path = root + "data/xml/"
-txt_path = root + "data/txt/"
-path = root + "data/"
+xml_path = root + "/data/xml/"
+txt_path = root + "/data/txt/"
+path = root + "/data/"
 
 if (os.path.isfile(path + "corpus_words.txt") == 0) :    # creation of corpus_words.txt if needed
     newfile = open(path + "corpus_words.txt","w+")
