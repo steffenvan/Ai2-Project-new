@@ -15,6 +15,7 @@ def build_matrix() :
     df = pd.DataFrame(columns = columns)
     ids = [filename for filename in os.listdir(json_path) if filename.endswith("json")]
     df["ID"] = ids
+    
     df.fillna(value = 0, inplace = True)
     for index, ID in df["ID"].iteritems():
         file = open(str(json_path+"/"+ID))
@@ -25,21 +26,7 @@ def build_matrix() :
             for frame in sentence["frames"] :
                 if frame["target"]["name"] in frames_to_keep :
                     df.loc[index,frame["target"]["name"]] += 1
+                    
+    df.set_index("ID", inplace = True)
     df.to_pickle("data.pkl")
-    
-
-
-def identical_words(L,M) :   # given two lists of words, computes how many words appear in both lists
-    count = 0
-    
-    if len(M) > len(L) :
-        for elt in L :
-            if elt in M :
-                count += 1
-    else :
-        for elt in M :
-            if elt in L :
-                count += 1
-                
-    return count
                 
