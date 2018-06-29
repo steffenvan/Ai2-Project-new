@@ -20,4 +20,8 @@ df = pd.read_pickle("data.pkl")
 def get_line(df, id) :
     return df.loc[id,:]
     
-get_line(df, "W05-0503-parscit.130908.json")
+# print(get_line(df, "W05-0503-parscit.130908.json"))
+
+for file in list(df.index.values) :
+    print(list(get_line(df, file)))
+    
