@@ -3,6 +3,17 @@ from extraction import *
 import os
 import pandas as pd
 import spacy
+import json
+import pickle
+
+"""
+This script allows the creation of two files :
+- a data frame, stored as data.pkl, containing for each files the number of occurences of the frames specified in the frames_to_keep list specified below
+- a list of dictionnaries, stored as "out.pkl". Each entry of the list is a dictionnary, with a  
+
+"""
+
+
 
 
 json_path = os.path.join(parent + "/json_abs/")
@@ -15,18 +26,50 @@ def build_matrix() :
     df = pd.DataFrame(columns = columns)
     ids = [filename for filename in os.listdir(json_path) if filename.endswith("json")]
     df["ID"] = ids
-    
+    frames_text = []
     df.fillna(value = 0, inplace = True)
     for index, ID in df["ID"].iteritems():
         file = open(str(json_path+"/"+ID))
         data = json.load(file)
         file.close()
+        d = {} ##
         print(ID + " open")
         for sentence in data :
             for frame in sentence["frames"] :
                 if frame["target"]["name"] in frames_to_keep :
                     df.loc[index,frame["target"]["name"]] += 1
-                    
+                    if frame["target"]["name"] not in d :
+                        d[frame["target"]["name"]] = []
+                        d[frame["target"]["name"]].append(extract_text(frame))
+        frames_text.append(d)
+                        
+
     df.set_index("ID", inplace = True)
     df.to_pickle("data.pkl")
-                
+    
+    output_file = open("frames_text.pkl","wb+")
+    pickle.dump(frames_text, output_file)
+    output_file.close()
+    
+   
+
+# df = pd.read_pickle("data.pkl")
+# output_file = open("out.pkl","wb+")
+# output = []
+# for id in df.index :
+#     json_file = json.load(open(json_path + id))
+#     d = {}
+#     for sentence in json_file :
+#         for frame in sentence["frames"] :
+#             frame_name = frame["target"]["name"]
+#             if  (frame_name not in d) and (frame_name in frames_to_keep):
+#                 d[frame_name] = []
+#             if frame_name in frames_to_keep :
+#                 d[frame_name].append(extract_text(frame))
+#     output.append(d)
+# 
+# pickle.dump(output, output_file)
+# 
+# output_file.close()
+# 
+# L = pickle.load(open("out.pkl","rb"))
