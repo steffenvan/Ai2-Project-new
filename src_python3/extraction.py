@@ -8,6 +8,9 @@ import spacy
 This file allows the extracion of only specific sections of json / txt files
 """
 
+# If needed install the core_web package by:
+# python3 -m spacy download en_core_web_lg
+
 nlp = spacy.load("en_core_web_lg")
 
 def extract_text(frame) :      # given a frame, extract all the text from frameElements / spans
