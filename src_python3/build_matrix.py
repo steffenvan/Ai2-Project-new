@@ -9,7 +9,7 @@ import pickle
 """
 This script allows the creation of two files :
 - a data frame, stored as data.pkl, containing for each files the number of occurences of the frames specified in the frames_to_keep list specified below
-- a list of dictionnaries, stored as "out.pkl". Each entry of the list is a dictionnary, with a  
+- a list of dictionnaries, stored as "out.pkl". Each entry of the list is a dictionnary, with a
 
 """
 
@@ -42,16 +42,16 @@ def build_matrix() :
                         d[frame["target"]["name"]] = []
                         d[frame["target"]["name"]].append(extract_text(frame))
         frames_text.append(d)
-                        
+
 
     df.set_index("ID", inplace = True)
     df.to_pickle("data.pkl")
-    
+
     output_file = open("frames_text.pkl","wb+")
     pickle.dump(frames_text, output_file)
     output_file.close()
-    
-   
+
+
 
 # df = pd.read_pickle("data.pkl")
 # output_file = open("out.pkl","wb+")
@@ -67,9 +67,9 @@ def build_matrix() :
 #             if frame_name in frames_to_keep :
 #                 d[frame_name].append(extract_text(frame))
 #     output.append(d)
-# 
+#
 # pickle.dump(output, output_file)
-# 
+#
 # output_file.close()
-# 
+#
 # L = pickle.load(open("out.pkl","rb"))
