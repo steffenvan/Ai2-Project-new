@@ -1,5 +1,8 @@
 import pandas as pd
 from extraction import *
+from path import *
+
+json_path = os.path.join(parent + "/json_abs/")
 
 def identical_words(L,M) :   # given two lists of words, computes how many words appear in both lists
     count = 0
@@ -14,27 +17,35 @@ def identical_words(L,M) :   # given two lists of words, computes how many words
                 count += 1
                 
     return count
-# 
-# df = pd.read_pickle("data.pkl")    
+   
 
 def get_line(df, id) :
-    return df.loc[id,:]
-    
-# print(get_line(df, "W05-0503-parscit.130908.json"))
-# article = list(df.index.values)[0]
-# 
-# for file in list(df.index.values) :
-# 
-# 
-# 
-# for file in list(df.index.values) :
-#     print(list(get_line(df, file)))
+    return (df.loc[id,:]).tolist()
     
     
-def distance(L,M) :
+def similarity(L,M) :     # computes the number elements in L and M which are non-zero at the same time
     assert len(L)==len(M)
     return sum([L[i]>0 and M[i]>0 for i in range(len(L))])
     
-print(distance([1,0,3],[1,1,0]))
+
+df = pd.read_pickle("data.pkl")
+
+reference = get_line(df, df.index[0])
+out = json.load(open(json_path + str(df.index[0])))
+for sentence in out :
+    for frame in sentence["frames"] :
+        print(extract_text(frame))
+
+print(df.index[0])
+
+for id in df.index[1:] :
+    sim = similarity(reference, get_line(df,id))
+    if sim > 4 :
+        print(id)
+        out = json.load(open(json_path + str(id)))
+        for sentence in out :
+            for frame in sentence["frames"] :
+                if frame["target"]["name"] in df.columns :
+                    print(extract_text(frame))
     
     
