@@ -13,9 +13,6 @@ This script allows the creation of two files :
 
 """
 
-
-
-
 json_path = os.path.join(parent + "/json_abs/")
 
 
@@ -50,26 +47,3 @@ def build_matrix() :
     output_file = open("frames_text.pkl","wb+")
     pickle.dump(frames_text, output_file)
     output_file.close()
-    
-   
-
-# df = pd.read_pickle("data.pkl")
-# output_file = open("out.pkl","wb+")
-# output = []
-# for id in df.index :
-#     json_file = json.load(open(json_path + id))
-#     d = {}
-#     for sentence in json_file :
-#         for frame in sentence["frames"] :
-#             frame_name = frame["target"]["name"]
-#             if  (frame_name not in d) and (frame_name in frames_to_keep):
-#                 d[frame_name] = []
-#             if frame_name in frames_to_keep :
-#                 d[frame_name].append(extract_text(frame))
-#     output.append(d)
-# 
-# pickle.dump(output, output_file)
-# 
-# output_file.close()
-# 
-# L = pickle.load(open("out.pkl","rb"))
