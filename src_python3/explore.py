@@ -12,7 +12,7 @@ from random import shuffle
 from extraction import *
 
 json_path =  root + "/data/json/"
-txt_path = root+ "data/txt/"
+txt_path = root+ "/data/txt/"
 
 def number_of_frames(json_file) :
     json_list = json.load(open(json_file))
