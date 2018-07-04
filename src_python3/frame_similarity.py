@@ -1,35 +1,27 @@
+# This computes the similarity of the common frames of an abstract with all
+# the other abstracts we have.
+
 import pandas as pd
 from extraction import *
 from path import *
+import operator
 
-# This computes the similarity of the common frames of an abstract with all
-# the other abstracts we have.
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 # Remember to set the correct path
 json_path = os.path.join(parent + "/json_abs/")
 
+# Opening correct files
 df = pd.read_pickle("data.pkl")
 reference_file = json.load(open(json_path + str(df.index[0])))
 all_other_abstracts = df.index[1:]
 
-# Given two lists of words, computes how many words appear in both lists
-def identical_words(L,M):
-    count = 0
+def get_frames_count(df, id) :
+    res = (df.loc[id,:]).tolist()
+    return res
 
-    if len(M) > len(L):
-        for elt in L :
-            if elt in M :
-                count += 1
-    else:
-        for elt in M :
-            if elt in L :
-                count += 1
-    return count
-
-def get_line(df, id) :
-    return (df.loc[id,:]).tolist()
-
-reference = get_line(df, df.index[0])
+reference_frames = get_frames_count(df, df.index[0])
 
 # Computes the number elements in L and M which are non-zero at the same time
 def element_similarity(L,M):
@@ -47,29 +39,49 @@ def tokenize_relevant_frames(file):
                 result = extract_text(frame)
                 annot = " ".join(result["annot"])
                 nlp_tokens = nlp(annot)
-                text_dict.update({result["name"] : nlp_tokens})
+                text_dict.update({result["name"] : annot})
                 # print("Frame: %s, Target: %s" % (result["name"], result["target"]))
                 # print("Full text: ", nlp_tokens)
     return text_dict
 
-reference_file_result = tokenize_relevant_frames(reference_file)
+reference_result = tokenize_relevant_frames(reference_file)
 
 # Computes the similarity value between the common frames of the reference abstract
 # and all the other abstracts one by one.
 # TODO: find a proper value for the threshold (elem_sim).
 
-for abs_id in all_other_abstracts:
-    elem_sim = element_similarity(reference, get_line(df, abs_id))
-    if elem_sim > 4 :
-        print("****************************************************************\n")
-        print(abs_id)
-        temp_abs = json.load(open(json_path + str(abs_id)))
-        temp_file_result = tokenize_relevant_frames(temp_abs)
+
+# Dictionary for the paper and its similarity value for the reference paper.
+paper_and_sim_val = {}
+tfidf_vectorizer = TfidfVectorizer()
+
+for abstract_id in all_other_abstracts:
+    sim_frame_count = element_similarity(reference_frames, get_frames_count(df, abstract_id))
+    total_sim_val = 0.0
+    if sim_frame_count > 4 :
+        print("\n****************************************************************\n")
+        print(abstract_id, "\n")
+        temp_abstract = json.load(open(json_path + str(abstract_id)))
+        temp_result = tokenize_relevant_frames(temp_abstract)
 
         # Find common frames between the reference and other abstracts.
-        for key in reference_file_result.keys() & temp_file_result.keys():
-            simil_val = reference_file_result[key].similarity(temp_file_result[key])
+        for key in reference_result.keys() & temp_result.keys():
+            cos_sim = 0.0
+            if reference_result[key] and temp_result[key]:      # if frames for both papers contains a text
+                frame_tuple    = (reference_result[key], temp_result[key])
+                frame_matrix   = tfidf_vectorizer.fit_transform(frame_tuple)
+                cos_sim        = cosine_similarity(frame_matrix[0:1], frame_matrix)[0][1]
+                total_sim_val += cos_sim
+
             print("Similar frame: %s" % key)
-            print("Similarity value: %f \nReference text: %s \nCompared text: %s\n" % (simil_val,
-                                                                                       reference_file_result[key],
-                                                                                       temp_file_result[key]))
+            print("Cosine similarity: %f" % cos_sim)
+            print("Reference text: %s" % reference_result[key])
+            print("Compared text: %s\n" % temp_result[key])
+        print("Total value: %f" % total_sim_val)
+
+    paper_and_sim_val.update({abstract_id:total_sim_val})
+
+# Ranking the papers from highest to lowest
+sorted_values = sorted(paper_and_sim_val.items(), key=lambda x: x[1], reverse=True)
+best_paper    = max(paper_and_sim_val.items(), key=operator.itemgetter(1))[0]
+print("\nMost similar paper:", best_paper)
