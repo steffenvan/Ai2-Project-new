@@ -13,10 +13,10 @@ This script allows the creation of two files :
 
 """
 
-json_path = os.path.join(parent + "/json_abs/")
+json_path = os.path.join(data_path + "json_abs/")
 
 
-frames_to_keep = ['Causation','Increment', 'Means', 'Aggregate','Relational_quantity', 'Evidence','Assessing','Inclusion','Usefulness','Reasoning', 'Cause_to_make_progress','Importance','Desirability', 'Evaluative_comparison', 'Performing_arts', 'Change_position_on_a_scale', 'Trust', 'Position_on_a_scale', 'Predicament', 'Supply']
+frames_to_keep = ['Causation','Increment', 'Means', 'Aggregate','Relational_quantity', 'Evidence','Assessing','Inclusion','Usefulness','Reasoning', 'Cause_to_make_progress','Importance','Desirability', 'Evaluative_comparison', 'Performing_arts', 'Change_position_on_a_scale', 'Trust', 'Position_on_a_scale', 'Predicament', 'Supply', 'Accomplishment']
 
 def build_matrix() :
     columns = ["ID"] + frames_to_keep
@@ -42,8 +42,8 @@ def build_matrix() :
                         
 
     df.set_index("ID", inplace = True)
-    df.to_pickle("data.pkl")
+    df.to_pickle(os.path.join(data_path,"data.pkl"))
     
-    output_file = open("frames_text.pkl","wb+")
+    output_file = open(os.path.join(data_path,"frames_text.pkl"),"wb+")
     pickle.dump(frames_text, output_file)
     output_file.close()
