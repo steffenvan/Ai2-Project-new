@@ -1,3 +1,0 @@
-<newSection> Abstract We describe two shared task systems and associated experiments.
-The German to English system used reordering rules applied to parses and morphological splitting and stemming.
-The English to German system used an additional translation step which recreated compound words and generated morphological inflection.
