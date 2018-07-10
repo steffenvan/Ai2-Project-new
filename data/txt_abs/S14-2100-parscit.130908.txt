@@ -1,2 +1,0 @@
-<newSection> Abstract This article presents the participation of the SINAI research group in the task Sentiment Analysis in Twitter of the SemEval Workshop.
-Our proposal consists of a voting system of three polarity classifiers which follow a lexicon-based approach.

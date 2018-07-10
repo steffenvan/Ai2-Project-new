@@ -1,7 +1,9 @@
-from path import root
+from path import root, parent, data_path
 import json
 import string
 import spacy
+import os
+import pandas as pd
 
 
 """
@@ -11,7 +13,16 @@ This file allows the extracion of only specific sections of json / txt files
 # If needed install the core_web package by:
 # python3 -m spacy download en_core_web_lg
 
-nlp = spacy.load("en_core_web_lg")
+try :
+    nlp = spacy.load("en_core_web_lg")
+except :
+    os.system("python3 -m spacy download en_core_web_lg")
+    nlp = spacy.load("en_core_web_lg")
+
+def load_dataframe(file = os.path.join(data_path,"data.pkl")) :
+    df = pd.read_pickle(file)
+    return df
+    
 
 def extract_text(frame) :      # given a frame, extract all the text from frameElements / spans
     tokens_annot = []
@@ -110,3 +121,17 @@ def conclusion_txt(txt_file) :
             i += 1
         end = i
         return '\n'.join(full[beg:end])
+        
+def extract_frame_sentence(json_filename, df = "NONE"):   # if df == "NONE" : the dataframe is loaded from its orginal location (in the data folder)
+    if df == "NONE" :                                      # else (better), specify an already loaded df
+        df = load_dataframe()
+    json_object = json.load(open(json_filename))
+    sentence = ""
+    frame_and_sentence = {}
+    for list_of_frames in json_object :
+        for frame in list_of_frames["frames"]:
+            if frame["target"]["name"] in df.columns:
+                sentence = " ".join(list_of_frames["tokens"])
+                frame_and_sentence.update({frame["target"]["name"] : sentence})
+
+    return frame_and_sentence

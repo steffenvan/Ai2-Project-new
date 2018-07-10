@@ -1,2 +1,0 @@
-<newSection> Abstract We detail methods for entity span identification and entity class annotation of Twitter communications that take place during times of mass emergency.
-We present our motivation, method and preliminary results.

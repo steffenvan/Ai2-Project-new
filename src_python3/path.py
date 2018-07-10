@@ -6,4 +6,6 @@ root = os.path.abspath(os.path.join(os.path.abspath(os.getcwd()), os.pardir)) # 
 
 parent = os.path.abspath(os.path.join(os.path.abspath(root), os.pardir)) # parent dir containing Ai2, semafor, json_abs
 
-abs_path = os.path.join(parent, "json_abs/")
+data_path = os.path.join(parent, "data/")
+
+abs_path = os.path.join(data_path, "json_abs/")
