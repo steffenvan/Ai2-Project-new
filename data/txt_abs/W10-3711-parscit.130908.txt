@@ -1,2 +1,0 @@
-<newSection> Abstract In this paper we tackle the challenging task of Multi-word term (MWT) extraction from different types of specialized corpora.
-Contrastive filtering of previously extracted MWTs results in a considerable increment of acquired domainspecific terms.
