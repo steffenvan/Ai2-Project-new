@@ -75,12 +75,15 @@ def extract_with_pos(frame, to_keep = ["ADJ","NOUN"]) :
 
 
 def abstract_json(json_file) :                    # returns the part of the json semafor output correspounding to the abstract
-    full_output = json.load(open(json_file))
+    file = open(json_file)
+    full_output = json.load(file)
+    file.close()
     i = 0
     while ("Abstract" not in full_output[i]["tokens"]) : # or "abstract" not in full_output[i]["tokens"]
         i += 1
     beg = i
-    while ("Introduction" not in full_output[i]["tokens"]) :
+    # introduction_trigg = ["Introduction","introduction", ]
+    while ("newSection" not in full_output[i]["tokens"]) :
         i += 1
     end = i
     return full_output[beg:end]
@@ -132,6 +135,10 @@ def extract_frame_sentence(json_filename, df = "NONE"):   # if df == "NONE" : th
         for frame in list_of_frames["frames"]:
             if frame["target"]["name"] in df.columns:
                 sentence = " ".join(list_of_frames["tokens"])
-                frame_and_sentence.update({frame["target"]["name"] : sentence})
-
+                key = frame["target"]["name"]
+                if key not in frame_and_sentence :
+                    frame_and_sentence.update({key : [sentence]})
+                else :
+                    if sentence not in frame_and_sentence[key] :
+                        frame_and_sentence[key].append(sentence)
     return frame_and_sentence
