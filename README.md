@@ -10,9 +10,12 @@ note : please use the following set up to make sure everything works fine :
 
 ## Data
 
-This folder should contain the files and folders. They can be retrieved [here](https://drive.google.com/drive/folders/1c2yp5YUgS-OlUb5p7xIDLPlMMOVLsbIX).
+This folder should contain some files and folders found from [this link](https://drive.google.com/drive/folders/1c2yp5YUgS-OlUb5p7xIDLPlMMOVLsbIX).
 
-The are found in the file `data.zip`. 
+Specifically these files:
+- `data.zip` (the files and folders from unzipping this one)
+- `mymodel.gsm`
+
 
 ## Similarity values:
 An abstract and its similarity values (dice, jaccard, cosine, WMD) can be shown by running `frame_similarity.py`.
