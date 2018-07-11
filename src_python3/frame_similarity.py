@@ -7,19 +7,22 @@ from path import *
 import operator
 import numpy as np
 import nltk
+
 from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer
 from sklearn.metrics.pairwise import cosine_similarity
+from gensim.models import Word2Vec
+from scipy import spatial
 
 # Remember to set the correct path
 json_path    = os.path.join(parent, "json_abs/")
 data_path = os.path.join(parent, "data/txt_abs")
 
 
+# Remember to set path to word2vec model
+path_to_model = os.path.join(root, "gensim/mymodel.gsm")
+model = Word2Vec.load(path_to_model)
+word_vectors = model.wv
 # Opening correct files
-df = pd.read_pickle("data.pkl")
-reference_file = json.load(open(json_path + str(df.index[0])))
-all_other_abstracts = df.index[1:]
-
 
 def get_document_text(document_id):
     format = "txt"
@@ -28,14 +31,22 @@ def get_document_text(document_id):
     return content
 
 
-ref_content = get_document_text(df.index[0])
+def load_dataframe(file = "data.pkl") :
+    df = pd.read_pickle(file)
+    return df
 
 
-def get_frames_count(df, id) :
+def get_frames_count(id) :
+    df = load_dataframe()
     res = (df.loc[id,:]).tolist()
     return res
 
-reference_frames = get_frames_count(df, df.index[0])
+if  __name__ == "__main__" :
+    df = pd.read_pickle("data.pkl")
+    reference_file = json.load(open(json_path + str(df.index[0])))
+    all_other_abstracts = df.index[1:]
+    ref_content = get_document_text(df.index[0])
+    reference_frames = get_frames_count(df.index[0])
 
 # Computes the number elements in L and M which are non-zero at the same time
 def element_similarity(L,M):
@@ -77,17 +88,6 @@ def dice_coefficient(a,b):
     score = float(matches)/float(lena + lenb)
     return score
 
-stopw = ['the', 'a']
-
-def tfidf_vectorize(text):
-    doc = 1
-    vectorizer = TfidfVectorizer(min_df=1, stop_words=stopw)
-    tfidf_matrix = vectorizer.fit_transform(text)
-    feature_names = vectorizer.get_feature_names()
-
-    return tfidf_matrix
-
-
 ######################### tf-idf measures ##########################
 
 def tfidf_vector_similarity(sentence_1, sentence_2):
@@ -107,12 +107,43 @@ def jaccard_similarity_coefficient(sentence_1, sentence_2):
     intersection_words = set(words_1).intersection(set(words_2))
     return len(intersection_words)/len(joint_words)
 
+######################### cosine measures ##########################
 
-# Returns a dictionary of the frames of a file.
-# Keys: Frames
-# Values: Full sentence in which the frames are found
+def avg_sentence_vector(words, model, num_features, index2word_set):
+    #function to average all words vectors in a given paragraph
+    featureVec = np.zeros((num_features,), dtype="float32")
+    nwords = 0
+
+    for word in words:
+        if word in index2word_set:
+            nwords = nwords+1
+            featureVec = np.add(featureVec, model[word])
+
+    if nwords>0:
+        featureVec = np.divide(featureVec, nwords)
+    return featureVec
+
+def embedding_sentence_similarity(sentence_1, sentence_2):
+    sent1 = sentence_1.split()
+    sent2 = sentence_2.split()
+    index2word_set = set(word_vectors.index2word)
+    sent1_avg = avg_sentence_vector(sent1, model, 100, index2word_set)
+    sent2_avg = avg_sentence_vector(sent2, model, 100, index2word_set)
+    similarity = 1 - spatial.distance.cosine(sent1_avg, sent2_avg)
+    return similarity
+
+
+######################### word mover distance measure ##########################
+
+def WMD(sentence_1, sentence_2):
+    words_1 = sentence_1.split()
+    words_2 = sentence_2.split()
+    distance = word_vectors.wmdistance(words_1, words_2)
+    similarity = 1 - distance
+    return similarity
 
 def extract_frame_sentence(file):
+    df = load_dataframe()
     sentence = ""
     frame_and_sentence = {}
     for list_of_frames in file:
@@ -123,28 +154,15 @@ def extract_frame_sentence(file):
 
     return frame_and_sentence
 
+
 ref_frame_and_sentence = extract_frame_sentence(reference_file)
-
-
-
 
 # Dictionary for the paper and its similarity value with the reference paper.
 paper_and_cos_val = {}
 paper_and_dice_val = {}
 paper_and_jaccard_val = {}
-
-def tokenize(txt):
-    if txt == ',':
-        return txt.split('.')
-    elif txt == '.':
-        return txt.split('.')
-    elif txt == '<':
-        return txt.split('<')
-    elif txt == '>':
-        return txt.split('>')
-    else:
-        return txt
-
+paper_and_wm_val = {}
+paper_and_embeddings_cos_val = {}
 
 # for abstract_id in all_other_abstracts:
 #     content = get_document_text(abstract_id)
@@ -179,14 +197,15 @@ def tfidf_vectorize_document(document):
 # TODO: find a proper value for the threshold (elem_sim).
 
 for abstract_id in all_other_abstracts:
-
-    sim_frame_count   = element_similarity(reference_frames, get_frames_count(df, abstract_id))
+    current_frame_count = get_frames_count(abstract_id)
+    sim_frame_count   = element_similarity(reference_frames, current_frame_count)
 
     total_sim_val     = 0.0
     total_dice_val    = 0.0
     total_jaccard_val = 0.0
-    total_sent_val    = 0.0
-
+    total_wm_val = 0.0
+    total_embeddings_cosine_val = 0.0
+    #total_sent_val = 0.0
     if sim_frame_count > 4 :
         print("\n****************************************************************\n")
         print(abstract_id, "\n")
@@ -205,6 +224,8 @@ for abstract_id in all_other_abstracts:
             cos_sim = 0.0
             dice_sim = 0.0
             jaccard_sim = 0.0
+            wm_sim = 0.0
+            embeddings_cosine_sim = 0.0
             #sent_sim = 0.0
 
             #sentences_tuple = (ref_frame_and_sentence[key], temp_frame_and_sentence[key])
@@ -221,6 +242,15 @@ for abstract_id in all_other_abstracts:
             jaccard_sim = jaccard_similarity_coefficient(ref_frame_and_sentence[key], temp_frame_and_sentence[key])
             total_jaccard_val += jaccard_sim
 
+            # Word mover distance
+            wm_sim = WMD(ref_frame_and_sentence[key], temp_frame_and_sentence[key])
+            total_wm_val += wm_sim
+
+            # cosine similarity between word embedding vectors
+            embeddings_cosine_sim = embedding_sentence_similarity(ref_frame_and_sentence[key], temp_frame_and_sentence[key])
+            total_embeddings_cosine_val += embeddings_cosine_sim
+
+
             # other similarity
             #info_content_norm = True
             #sent_sim = similarity(ref_frame_and_sentence[key], temp_frame_and_sentence[key])
@@ -229,11 +259,15 @@ for abstract_id in all_other_abstracts:
             paper_and_cos_val.update({abstract_id:total_sim_val})
             paper_and_dice_val.update({abstract_id:total_dice_val})
             paper_and_jaccard_val.update({abstract_id:total_jaccard_val})
+            paper_and_wm_val.update({abstract_id:total_wm_val})
+            paper_and_embeddings_cos_val.update({abstract_id:total_embeddings_cosine_val})
 
             print("Similar frame: %s" % key)
             print("Cosine similarity: %f" % cos_sim)
             print("Dice coefficient: %f" % dice_sim)
             print("Jaccard similarity: %f" % jaccard_sim)
+            print("Word Mover similarity: %f" % wm_sim)
+            print("Embeddings cosine similarity: %f" % embeddings_cosine_sim)
             #print("Sentence similarity: %f" % sent_sim)
             print("Reference text: %s" % ref_frame_and_sentence[key])
 
@@ -241,23 +275,35 @@ for abstract_id in all_other_abstracts:
         print("Total cos value: %f" % total_sim_val)
         print("Total dice val: %f" % total_dice_val)
         print("Total jaccard val: %f" % total_jaccard_val)
+        print("Total Word Mover val: %f" % total_wm_val)
+        print("Total embeddings cos value: %f" % total_embeddings_cosine_val)
         #print("Total sentence val: %f" % total_sent_val)
 
 #Ranking the papers from highest to lowest
 sorted_cos          = sorted(paper_and_cos_val.items(), key=lambda x: x[1], reverse=True)
 sorted_dice         = sorted(paper_and_dice_val.items(), key=lambda x: x[1], reverse=True)
 sorted_jaccard      = sorted(paper_and_jaccard_val.items(), key=lambda x: x[1], reverse=True)
+sorted_wm           = sorted(paper_and_wm_val.items(), key=lambda x: x[1], reverse=True)
+sorted_emb_cos      = sorted(paper_and_embeddings_cos_val.items(), key=lambda x: x[1], reverse=True)
+
 best_paper_cos      = max(paper_and_cos_val.items(), key=operator.itemgetter(1))[0]
 best_paper_dice     = max(paper_and_dice_val.items(), key=operator.itemgetter(1))[0]
 best_paper_jaccard  = max(paper_and_jaccard_val.items(), key=operator.itemgetter(1))[0]
+best_paper_wm       = max(paper_and_wm_val.items(), key=operator.itemgetter(1))[0]
+best_paper_emb_cos  = max(paper_and_embeddings_cos_val.items(), key=operator.itemgetter(1))[0]
 
 print("\nPaper and Cos values:\n", sorted_cos)
 print("\nPaper and Dice values:\n", sorted_dice)
 print("\nPaper and Jaccard values:\n", sorted_jaccard)
+print("\nPaper and word mover values:\n", sorted_wm)
+print("\nPaper and embeddings cosine similarity values:\n", sorted_emb_cos)
 print("\nSimilar paper count:", len(paper_and_cos_val))
 print("\nMost similar paper using cosine:", best_paper_cos)
 print("\nMost similar paper using dice:", best_paper_dice)
 print("\nMost similar paper using jaccard:", best_paper_jaccard)
+print("\nMost similar paper using word mover:", best_paper_wm)
+print("\nMost similar paper using embeddings and cosine similarity:", best_paper_emb_cos)
+
 
 
     # top_n_words = 10
