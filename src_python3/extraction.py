@@ -1,7 +1,6 @@
 from path import root, parent, data_path
 import json
 import string
-import spacy
 import os
 import pandas as pd
 
@@ -9,15 +8,6 @@ import pandas as pd
 """
 This file allows the extracion of only specific sections of json / txt files
 """
-
-# If needed install the core_web package by:
-# python3 -m spacy download en_core_web_lg
-
-try :
-    nlp = spacy.load("en_core_web_lg")
-except :
-    os.system("python3 -m spacy download en_core_web_lg")
-    nlp = spacy.load("en_core_web_lg")
 
 def load_dataframe(file = os.path.join(data_path,"data.pkl")) :
     df = pd.read_pickle(file)
@@ -46,7 +36,7 @@ def extract_text(frame) :      # given a frame, extract all the text from frameE
     return output
 
 
-def extract_with_pos(frame, to_keep = ["ADJ","NOUN"]) :
+def extract_with_pos(frame, nlp, to_keep = ["ADJ","NOUN"]) :
 
         tokens_annot = []
         tokens_name = []
@@ -125,8 +115,8 @@ def conclusion_txt(txt_file) :
         end = i
         return '\n'.join(full[beg:end])
         
-def extract_frame_sentence(json_filename, df = "NONE"):   # if df == "NONE" : the dataframe is loaded from its orginal location (in the data folder)
-    if df == "NONE" :                                      # else (better), specify an already loaded df
+def extract_frame_sentence(json_filename, df = pd.DataFrame()):   # if df == "NONE" : the dataframe is loaded from its orginal location (in the data folder)
+    if len(df) == 0 :                                      # else (better), specify an already loaded df
         df = load_dataframe()
     json_object = json.load(open(json_filename))
     sentence = ""

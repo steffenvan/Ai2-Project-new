@@ -3,6 +3,8 @@ import numpy as np
 from numpy import dot
 from numpy.linalg import norm
 import nltk
+import pandas as pd
+from frame_similarity import get_frames_count
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from gensim.models import Word2Vec
@@ -13,6 +15,9 @@ from scipy import spatial
 path_to_model = os.path.join(data_path, "mymodel.gsm")
 model = Word2Vec.load(path_to_model)
 word_vectors = model.wv
+
+def load_dataframe(file = os.path.join(data_path,"data.pkl")) :
+    return (pd.read_pickle(file))
 
 # Computes the number elements in L and M which are non-zero at the same time
 def element_similarity(L,M):

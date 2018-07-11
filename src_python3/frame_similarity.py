@@ -7,6 +7,7 @@ from path import *
 import pandas as pd
 import operator
 
+
 from similarity_utility import *
 
 # Setting the correct paths
@@ -30,17 +31,6 @@ def get_frames_count(id, df = pd.DataFrame()) :
     res = (df.loc[id,:]).tolist()
     return res
 
-def extract_frame_sentence(file):
-    df = load_dataframe()
-    sentence = ""
-    frame_and_sentence = {}
-    for list_of_frames in file:
-        for frame in list_of_frames["frames"]:
-            if frame["target"]["name"] in df.columns:
-                sentence = " ".join(list_of_frames["tokens"])
-                frame_and_sentence.update({frame["target"]["name"] : sentence})
-
-    return frame_and_sentence
 
 # Dictionary for the paper and its similarity value with the reference paper.
 paper_and_cos_val = {}
