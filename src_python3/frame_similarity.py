@@ -20,13 +20,13 @@ if __name__ == "__main__" :
     reference_file = json.load(open(json_path + str(df.index[0])))
     all_other_abstracts = df.index[1:]
 
-def load_dataframe(file = "data.pkl") :
+def load_dataframe(file = os.path.join(data_path,"data.pkl")) :
     df = pd.read_pickle(file)
     return df
 
-
-def get_frames_count(id) :
-    df = load_dataframe()
+def get_frames_count(id, df = pd.DataFrame()) :
+    if len(df) == 0 :
+        df = load_dataframe()
     res = (df.loc[id,:]).tolist()
     return res
 
@@ -37,6 +37,11 @@ if  __name__ == "__main__" :
 def element_similarity(L,M):
     assert len(L)==len(M)
     return sum([L[i]>0 and M[i]>0 for i in range(len(L))])
+
+def normalized_cosine_sim(L,M) :
+    l = [elt/sum(L) for elt in L]
+    m = [elt/sum(M) for elt in M]
+    return cosine_similarity(l,m)
 
 # Returns a dictionary of the frames of a file.
 # Keys: Frames
