@@ -119,19 +119,21 @@ def WMD(sentence_1, sentence_2):
     distance = word_vectors.wmdistance(words_1, words_2)
     similarity = 1 - distance
     return similarity
-    
-    
-""" given a doc id, returns the topn most similar documents in terms of cosine sim between their respective frame counts"""    
-    
+
+
+""" Given a document id, returns the topn most similar documents in terms of 
+the cosine similarity between their respective frame counts. The vectors are normalized
+beforehand. """
+
 def most_similar(id1, topn = 50, df = pd.DataFrame()) :
     if len(df) == 0 :
         df = load_dataframe()
-    
+
     L = get_frames_count(id1, df)
-    
+
     def score(id2) :                   # inner function, returns the similarity between id1 and id2
         M = get_frames_count(id2, df)
         return normalized_cosine_sim(L,M)
-        
+
     docs = [df.index[i] for i in range(len(df))]
     return (sorted(docs, key = score, reverse = True)[:topn])
