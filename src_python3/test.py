@@ -13,7 +13,6 @@ df = load_dataframe()
 example_frame = "Cause_to_make_progress"
 ref_doc_id = df.index[9]
 candidates = most_similar(ref_doc_id, 50, df)
-# doc_frames = extract_frame_sentence(os.path.join(json_path, doc_id), df)
 ref_sent_frames = extract_frame_sentence(os.path.join(json_path, ref_doc_id), df)
 
 # Returns the frame names of the top n highest tfidf valued words.
@@ -31,6 +30,16 @@ def weighted_sents_of_frame(doc_id, frame_sentences, frame, weighted_words):
             all_weighted_sentences.append(sentence)
 
     return all_weighted_sentences
+
+ref_weighted_words = weighted_tfidf_words(ref_doc_id)
+
+# def compare(doc1, doc2) :
+#     for frame_name in relevant_frames :
+#         for sent1 in sents_of_frame(doc1, frame_name) :
+#             L =
+#             for sent2 in sents_of_frame(doc2, frame_name) :
+#                 score_frame += cos
+
 
 # Highest tfidf-valued sentences the given frames of the reference file.
 ref_weighted_words = weighted_tfidf_words(ref_doc_id)

@@ -134,6 +134,11 @@ def most_similar(id1, topn = 50, df = pd.DataFrame()) :
     def score(id2) :                   # inner function, returns the similarity between id1 and id2
         M = get_frames_count(id2, df)
         return normalized_cosine_sim(L,M)
+<<<<<<< HEAD
+        
+    docs = [df.index[i] for i in range(len(df)) if df.index[i]!= id1]
+=======
 
     docs = [df.index[i] for i in range(len(df))]
+>>>>>>> 27cb6a7e86666a7571ee0ac9eb0b420b12932448
     return (sorted(docs, key = score, reverse = True)[:topn])

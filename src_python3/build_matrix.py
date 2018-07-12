@@ -19,15 +19,18 @@ json_path = os.path.join(data_path + "json/")
 frames_to_keep = ['Causation','Increment', 'Means', 'Aggregate','Relational_quantity', 'Evidence','Assessing','Inclusion','Usefulness','Reasoning', 'Cause_to_make_progress','Importance','Desirability', 'Evaluative_comparison', 'Performing_arts', 'Change_position_on_a_scale', 'Trust', 'Position_on_a_scale', 'Predicament', 'Supply', 'Accomplishment']
 
 def build_matrix() :
+    i = 0
     columns = ["ID"] + frames_to_keep
     df = pd.DataFrame(columns = columns)
     ids = [filename for filename in os.listdir(json_path) if filename.endswith("json")]
+    total = len(ids)
     df["ID"] = ids
     frames_text = []
     df.fillna(value = 0, inplace = True)
     for index, ID in df["ID"].iteritems():
         try :
             print("opening " + ID)
+            print(i, " on ", total)
             file = open(str(json_path+"/"+ID))
             data = json.load(file)
             file.close()
@@ -43,7 +46,7 @@ def build_matrix() :
             frames_text.append(d)
         except :
             print(ID + " could not be opened")                
-
+        i += 1
     df.set_index("ID", inplace = True)
     df.to_pickle(os.path.join(data_path,"data.pkl"))
 
