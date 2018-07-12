@@ -6,65 +6,122 @@ import pandas as pd
 from similarity_utility import *
 from frame_similarity import get_document_text, tfidf_vectorize_document
 from vect_functions import sentence_vectorize, cosine_sim
+import time
 
 json_path = os.path.join(data_path, "json/")
+
+frames_to_keep = ['Causation','Increment', 'Means', 'Aggregate','Relational_quantity', 'Evidence','Assessing','Inclusion','Usefulness','Reasoning', 'Cause_to_make_progress','Importance','Desirability', 'Evaluative_comparison', 'Performing_arts', 'Change_position_on_a_scale', 'Trust', 'Position_on_a_scale', 'Predicament', 'Supply']
 
 df = load_dataframe()
 example_frame = "Cause_to_make_progress"
 ref_doc_id = df.index[9]
 candidates = most_similar(ref_doc_id, 50, df)
-ref_sent_frames = extract_frame_sentence(os.path.join(json_path, ref_doc_id), df)
+ref_frame_sentences = extract_frame_sentence(os.path.join(json_path, ref_doc_id), df)
 
-# Returns the frame names of the top n highest tfidf valued words.
-def weighted_tfidf_words(doc_id):
+# Returns the top n highest tfidf valued words as a list.
+def important_tfidf_words(doc_id):
     doc_text                      = get_document_text(doc_id)
-    tfidf_weighted_document       = tfidf_vectorize_document(doc_text, 20)
-    weighted_document_words       = tfidf_weighted_document.keys()
-    return weighted_document_words
+    tfidf_important_document       = tfidf_vectorize_document(doc_text, 10)
+    important_document_words       = tfidf_important_document.keys()
+    return important_document_words
 
-# Returns the related sentences to the highest tfidf valued words in the reference file
-def weighted_sents_of_frame(doc_id, frame_sentences, frame, weighted_words):
-    all_weighted_sentences = []
-    for sentence in frame_sentences[frame] :
-        if sum([word.lower() in sentence.lower() for word in weighted_words]) > 2 :   # if the number of "important words" in a sentence is more than n, we keep that sentence
-            all_weighted_sentences.append(sentence)
+# Returns the related sentences containing the specified frame, to the highest tfidf valued words in the doc
+def important_sents_of_frame(doc_id, frame_sentences, important_words, min_important_words = 2):
+    important_frame_sentences = {}
+    # print(frame_sentences)
+    for frame_name in frame_sentences.keys() :
+        important_sentences = []
+        for sentence in frame_sentences[frame_name] :
+            if sum([word.lower() in sentence.lower() for word in important_words]) > min_important_words :   # if the number of "important words" in a sentence is more than n, we keep that sentence
+                important_sentences.append(sentence)
+            important_frame_sentences.update({frame_name:important_sentences})
+    # print(important_frame_sentences)
+    return important_frame_sentences
 
-    return all_weighted_sentences
 
-ref_weighted_words = weighted_tfidf_words(ref_doc_id)
+def compare(doc1, doc1_important_frame_sentences, important_words1, doc2, doc2_important_frame_sentences, important_words2) :
+    score = 0
+    i = 0
+    for frame_name in frames_to_keep :
+        if frame_name in doc1_important_frame_sentences.keys() and frame_name in doc2_important_frame_sentences.keys() :
+            score_frame = 0
+            sentences1 = doc1_important_frame_sentences[frame_name]
+            sentences2 = doc2_important_frame_sentences[frame_name]
+            # print(sentences1)
+            # print(sentences2)
+            for sent1 in sentences1 :
+                L = sentence_vectorize(sent1, important_words1)
+                for sent2 in sentences2 :
+                    M = sentence_vectorize(sent2, important_words2)
+                    score_frame += cosine_sim(L,M)
+            if len(doc1_important_frame_sentences[frame_name]) > 0 and len(doc2_important_frame_sentences[frame_name]) > 0:        
+                score += score_frame/(len(sentences1)*len(sentences2))
+                i += 1
+    score /= i
+    return score
+        
 
-# def compare(doc1, doc2) :
-#     for frame_name in relevant_frames :
-#         for sent1 in sents_of_frame(doc1, frame_name) :
-#             L =
-#             for sent2 in sents_of_frame(doc2, frame_name) :
-#                 score_frame += cos
+
+doc_1 = df.index[10]
+# doc_2 = df.index[10]
+
+d1_fs = extract_frame_sentence(os.path.join(json_path, doc_1), df)
+# d2_fs = extract_frame_sentence(os.path.join(json_path, doc_2), df)
+
+d1_iw = important_tfidf_words(doc_1)
+# d2_iw = important_tfidf_words(doc_2)
+d1_ifs = important_sents_of_frame(doc_1, d1_fs, d1_iw)
+# d2_ifs = important_sents_of_frame(doc_2, d2_fs, d2_iw)
+
+candidates = most_similar(doc_1, 50, df)
+
+scores = []
+
+for doc_2 in candidates :
+    print("ref : ", doc_1, ", current : ", doc_2)
+    d2_fs = extract_frame_sentence(os.path.join(json_path, doc_2), df)
+    d2_iw = important_tfidf_words(doc_2)
+    d2_ifs = important_sents_of_frame(doc_2, d2_fs, d2_iw)
+    score = compare(doc_1, d1_ifs, d1_iw, doc_2, d2_ifs, d2_iw)
+    print(score)
+    scores.append(score)
+    print("***********************")
+    print("\n")
+
+print(max(scores))
 
 
 # Highest tfidf-valued sentences the given frames of the reference file.
-ref_weighted_words = weighted_tfidf_words(ref_doc_id)
-sents_of_ref = weighted_sents_of_frame(ref_doc_id, ref_sent_frames, example_frame, ref_weighted_words)
-print(sents_of_ref)
-
-for sent in sents_of_ref:
-    # print("Reference sentences: ", sents_of_ref)
-    ref_sent_vect = sentence_vectorize(sent, ref_weighted_words)
-    # print(sent_vect)
-    for candidate in candidates[:6] :
-        candidate_words      = weighted_tfidf_words(candidate)
-        # weighted_candidate_sentences = weighted_sents
-        cand_frame_sentences = extract_frame_sentence(os.path.join(json_path, candidate), df)
-        weighted_cand_frame_sentences = weighted_sents_of_frame(candidate, cand_frame_sentences, example_frame, candidate_words)
-        print(candidate)
-        print("\n")
-        print(weighted_cand_frame_sentences)
-        print("\n")
-    print("****************************")
-
-    print("//////////////////////////////////////////////////////////////")
-#
-#
-#
+# ref_important_words = important_tfidf_words(ref_doc_id)
+# sents_of_ref = important_sents_of_frame(ref_doc_id, ref_frame_sentences, ref_important_words)
+# # print(sents_of_ref)
+# 
+# start = time.time()
+# 
+# for sent in sents_of_ref:
+# 
+#     # print("Reference sentences: ", sents_of_ref)
+#     ref_sent_vect = sentence_vectorize(sent, ref_important_words)
+#     # print(sent_vect)
+#     for candidate in candidates :
+#         print(candidate)
+#         candidate_words      = important_tfidf_words(candidate)
+#         cand_frame_sentences = extract_frame_sentence(os.path.join(json_path, candidate), df)
+#         if example_frame not in cand_frame_sentences.keys() :
+#             print("frame not in candidate")
+#         else :
+#             important_cand_frame_sentences = important_sents_of_frame(candidate, cand_frame_sentences, candidate_words)
+# 
+#         # print(candidate)
+#         print("\n")
+#         # print(important_cand_frame_sentences)
+#         print("\n")
+#     print("****************************")
+# 
+#     print("//////////////////////////////////////////////////////////////")
+# #
+# end = time.time()
+# print(str(end-start))
 #
 #
 #
@@ -74,8 +131,8 @@ for sent in sents_of_ref:
 # for candidate in candidates[:6] :
 #     sentences = []
 #     doc_text                = get_document_text(candidate)
-#     weighted_document       = tfidf_vectorize_document(doc_text, 20)
-#     important_words = weighted_document.keys()
+#     important_document       = tfidf_vectorize_document(doc_text, 20)
+#     important_words = important_document.keys()
 #     doc_frames = extract_frame_sentence(os.path.join(json_path, candidate), df)
 #     for sentence in doc_frames[example_frame] :
 #         print(sentence)
