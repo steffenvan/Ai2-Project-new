@@ -5,7 +5,7 @@ from build_matrix import *
 import pandas as pd
 from similarity_utility import *
 from frame_similarity import get_document_text, tfidf_vectorize_document
-from vect_functions import sentence_vec, cosine_sim
+from vect_functions import sentence_vectorize, cosine_sim
 
 json_path = os.path.join(data_path, "json/")
 
@@ -23,39 +23,36 @@ def weighted_tfidf_words(doc_id):
     weighted_document_words       = tfidf_weighted_document.keys()
     return weighted_document_words
 
-ref_weighted_words = weighted_tfidf_words(ref_doc_id)
-
-# Returns the related sentences to the highest tfidf valued words
-def weighted_sents_of_frame(doc_id, sentences, frame, weighted_words):
-    all_sentences       = []
-    for sentence in sentences[frame] :
+# Returns the related sentences to the highest tfidf valued words in the reference file
+def weighted_sents_of_frame(doc_id, frame_sentences, frame, weighted_words):
+    all_weighted_sentences = []
+    for sentence in frame_sentences[frame] :
         if sum([word.lower() in sentence.lower() for word in weighted_words]) > 2 :   # if the number of "important words" in a sentence is more than n, we keep that sentence
-            all_sentences.append(sentence)
+            all_weighted_sentences.append(sentence)
 
-    return all_sentences
-
-docs = []
+    return all_weighted_sentences
 
 # Highest tfidf-valued sentences the given frames of the reference file.
+ref_weighted_words = weighted_tfidf_words(ref_doc_id)
 sents_of_ref = weighted_sents_of_frame(ref_doc_id, ref_sent_frames, example_frame, ref_weighted_words)
 print(sents_of_ref)
 
-# for sent in sent_of_ref :
-#     print("reference : ", sentence_ref)
-#     L = sentence_vec(sentence_ref, important_words_ref)
-#     for candidate in candidates[:6] :
-#         doc_text                = get_document_text(candidate)
-#         weighted_document       = tfidf_vectorize_document(doc_text, 50)
-#         important_words = weighted_document.keys()
-#         doc_frames = extract_frame_sentence(os.path.join(json_path, candidate), df)
-#         for sentence in doc_frames[example_frame] :
-#             if sum([word.lower() in sentence.lower() for word in important_words]) > 2 :
-#                 M =  sentence_vec(sentence, important_words)
-#                 if cosine_sim(L,M) > 0.8 :
-#                     print("***", sentence, cosine_sim(L,M))
-#         print("****************************")
-#
-#     print("//////////////////////////////////////////////////////////////")
+for sent in sents_of_ref:
+    # print("Reference sentences: ", sents_of_ref)
+    ref_sent_vect = sentence_vectorize(sent, ref_weighted_words)
+    # print(sent_vect)
+    for candidate in candidates[:6] :
+        candidate_words      = weighted_tfidf_words(candidate)
+        # weighted_candidate_sentences = weighted_sents
+        cand_frame_sentences = extract_frame_sentence(os.path.join(json_path, candidate), df)
+        weighted_cand_frame_sentences = weighted_sents_of_frame(candidate, cand_frame_sentences, example_frame, candidate_words)
+        print(candidate)
+        print("\n")
+        print(weighted_cand_frame_sentences)
+        print("\n")
+    print("****************************")
+
+    print("//////////////////////////////////////////////////////////////")
 #
 #
 #
