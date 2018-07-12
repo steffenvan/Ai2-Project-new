@@ -16,22 +16,28 @@ candidates = most_similar(ref_doc_id, 50, df)
 # doc_frames = extract_frame_sentence(os.path.join(json_path, doc_id), df)
 ref_sent_frames = extract_frame_sentence(os.path.join(json_path, ref_doc_id), df)
 
-print(ref_doc_id)
-def all_sents_of_frame(doc_id, sentences, frame):
-    all_sentences       = []
-    doc_text            = get_document_text(doc_id)
-    weighted_document   = tfidf_vectorize_document(doc_text, 50)
-    important_words_ref = weighted_document.keys()
+# Returns the frame names of the top n highest tfidf valued words.
+def weighted_tfidf_words(doc_id):
+    doc_text                      = get_document_text(doc_id)
+    tfidf_weighted_document       = tfidf_vectorize_document(doc_text, 20)
+    weighted_document_words       = tfidf_weighted_document.keys()
+    return weighted_document_words
 
+ref_weighted_words = weighted_tfidf_words(ref_doc_id)
+
+# Returns the related sentences to the highest tfidf valued words
+def weighted_sents_of_frame(doc_id, sentences, frame, weighted_words):
+    all_sentences       = []
     for sentence in sentences[frame] :
-        if sum([word.lower() in sentence.lower() for word in important_words_ref]) > 2 :   # if the number of "important words" in a sentence is more than n, we keep that sentence
+        if sum([word.lower() in sentence.lower() for word in weighted_words]) > 2 :   # if the number of "important words" in a sentence is more than n, we keep that sentence
             all_sentences.append(sentence)
 
     return all_sentences
 
 docs = []
 
-sents_of_ref = all_sents_of_frame(ref_doc_id, ref_sent_frames, example_frame)
+# Highest tfidf-valued sentences the given frames of the reference file.
+sents_of_ref = weighted_sents_of_frame(ref_doc_id, ref_sent_frames, example_frame, ref_weighted_words)
 print(sents_of_ref)
 
 # for sent in sent_of_ref :
