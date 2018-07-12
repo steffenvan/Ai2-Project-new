@@ -5,52 +5,76 @@ from build_matrix import *
 import pandas as pd
 from similarity_utility import *
 from frame_similarity import get_document_text, tfidf_vectorize_document
-from vect_functions import sentence_vec, cosine_vec
+from vect_functions import sentence_vec, cosine_sim
 
 json_path = os.path.join(data_path, "json/")
 
 df = load_dataframe()
 example_frame = "Cause_to_make_progress"
-ref = df.index[8]
+ref = df.index[9]
 candidates = most_similar(ref, 50, df)
 
 
 sentences_ref = []
 doc_text                = get_document_text(ref)
-weighted_document       = tfidf_vectorize_document(doc_text, 20)
-important_words = weighted_document.keys()
-doc_frames = extract_frame_sentence(os.path.join(json_path, candidate), df)
+weighted_document       = tfidf_vectorize_document(doc_text, 50)
+important_words_ref = weighted_document.keys()
+doc_frames = extract_frame_sentence(os.path.join(json_path, ref), df)
 for sentence in doc_frames[example_frame] :
-        if sum([word.lower() in sentence.lower() for word in important_words]) > 6 :
+        if sum([word.lower() in sentence.lower() for word in important_words_ref]) > 2 :   # if the number of "important words" in a sentence is more than n, we keep that sentence
             sentences_ref.append(sentence)
 
 docs = []
 
-for candidate in candidates[:6] :
-    sentences = []
-    doc_text                = get_document_text(candidate)
-    weighted_document       = tfidf_vectorize_document(doc_text, 20)
-    important_words = weighted_document.keys()
-    doc_frames = extract_frame_sentence(os.path.join(json_path, candidate), df)
-    # print(doc_frames)
-    # for frame in doc_frames.keys() :
-    #     for sentence in doc_frames[frame] :
-    #             if sum([word.lower() in sentence.lower() for word in important_words]) > 6 :
-    #                 print(sentence)
-    #                 print("\n")
-    for sentence in doc_frames[example_frame] :
-            if sum([word.lower() in sentence.lower() for word in important_words]) > 6 :
-                sentences.append(sentence)
-                print(sentence)
-                print("\n")
-    docs.append(sentences)
+for sentence_ref in sentences_ref :
+    print("reference : ", sentence_ref)
+    L = sentence_vec(sentence_ref, important_words_ref)
+    for candidate in candidates[:6] :
+        doc_text                = get_document_text(candidate)
+        weighted_document       = tfidf_vectorize_document(doc_text, 50)
+        important_words = weighted_document.keys()
+        doc_frames = extract_frame_sentence(os.path.join(json_path, candidate), df)
+        for sentence in doc_frames[example_frame] :
+            if sum([word.lower() in sentence.lower() for word in important_words]) > 2 :
+                M =  sentence_vec(sentence, important_words)
+                if cosine_sim(L,M) > 0.8 :
+                    print("***", sentence, cosine_sim(L,M))
+        print("****************************")
+    
+    print("//////////////////////////////////////////////////////////////")
 
-max = 0
 
-for doc in docs :
-    for sentence in doc :
-        vect_doc = 
-        for sentence_ref in sentences_ref :
+
+
+
+
+
+
+
+# for candidate in candidates[:6] :
+#     sentences = []
+#     doc_text                = get_document_text(candidate)
+#     weighted_document       = tfidf_vectorize_document(doc_text, 20)
+#     important_words = weighted_document.keys()
+#     doc_frames = extract_frame_sentence(os.path.join(json_path, candidate), df)
+#     for sentence in doc_frames[example_frame] :
+#         print(sentence)
+#         L = sentence_vec(sentence, important_words)
+#         if sum([word.lower() in sentence.lower() for word in important_words]) > 6 :
+#             for sentence_ref in sentences ref :
+#                 M =  sentence_vec(sentence_ref, important_words_ref)
+#             # sentences.append(sentence)
+#                 print("***", sentence)
+#     print("****************************")
+#     docs.append(sentences)
+# 
+# 
+# max = 0
+# 
+# for doc in docs :
+#     for sentence in doc :
+#         vect_doc = 
+#         for sentence_ref in sentences_ref :
             
     
     
