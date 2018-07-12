@@ -47,6 +47,15 @@ for sentence_ref in sentences_ref :
 
 
 
+sents_of_frame(doc, frame, doc_frame)
+
+def compare(doc1, doc2) :
+    for frame_name in relevant_frames :
+        for sent1 in sents_of_frame(doc1, frame_name) :
+            L = 
+            for sent2 in sents_of_frame(doc2, frame_name) :
+                score_frame += cos
+
 
 
 

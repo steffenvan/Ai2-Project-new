@@ -133,5 +133,5 @@ def most_similar(id1, topn = 50, df = pd.DataFrame()) :
         M = get_frames_count(id2, df)
         return normalized_cosine_sim(L,M)
         
-    docs = [df.index[i] for i in range(len(df))]
+    docs = [df.index[i] for i in range(len(df)) if df.index[i]!= id1]
     return (sorted(docs, key = score, reverse = True)[:topn])
