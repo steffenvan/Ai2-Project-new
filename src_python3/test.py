@@ -9,14 +9,15 @@ from vect_functions import sentence_vectorize, cosine_sim
 import time
 
 json_path = os.path.join(data_path, "json/")
+txt_path = os.path.join(data_path, "txt/")
 
 frames_to_keep = ['Causation','Increment', 'Means', 'Aggregate','Relational_quantity', 'Evidence','Assessing','Inclusion','Usefulness','Reasoning', 'Cause_to_make_progress','Importance','Desirability', 'Evaluative_comparison', 'Performing_arts', 'Change_position_on_a_scale', 'Trust', 'Position_on_a_scale', 'Predicament', 'Supply']
 
 df = load_dataframe()
-example_frame = "Cause_to_make_progress"
-ref_doc_id = df.index[9]
-candidates = most_similar(ref_doc_id, 50, df)
-ref_frame_sentences = extract_frame_sentence(os.path.join(json_path, ref_doc_id), df)
+# example_frame = "Cause_to_make_progress"
+# ref_doc_id = df.index[970]
+# candidates = most_similar(ref_doc_id, 50, df)
+# ref_frame_sentences = extract_frame_sentence(os.path.join(json_path, ref_doc_id), df)
 
 # Returns the top n highest tfidf valued words as a list.
 def important_tfidf_words(doc_id):
@@ -26,7 +27,7 @@ def important_tfidf_words(doc_id):
     return important_document_words
 
 # Returns the related sentences containing the specified frame, to the highest tfidf valued words in the doc
-def important_sents_of_frame(doc_id, frame_sentences, important_words, min_important_words = 2):
+def important_sents_of_frame(doc_id, frame_sentences, important_words, min_important_words = 4):
     important_frame_sentences = {}
     # print(frame_sentences)
     for frame_name in frame_sentences.keys() :
@@ -57,12 +58,15 @@ def compare(doc1, doc1_important_frame_sentences, important_words1, doc2, doc2_i
             if len(doc1_important_frame_sentences[frame_name]) > 0 and len(doc2_important_frame_sentences[frame_name]) > 0:        
                 score += score_frame/(len(sentences1)*len(sentences2))
                 i += 1
-    score /= i
+    try :
+        score /= i
+    except :
+        return 0
     return score
         
 
 
-doc_1 = df.index[10]
+doc_1 = df.index[6729]     # 6729     8940
 # doc_2 = df.index[10]
 
 d1_fs = extract_frame_sentence(os.path.join(json_path, doc_1), df)
@@ -73,9 +77,12 @@ d1_iw = important_tfidf_words(doc_1)
 d1_ifs = important_sents_of_frame(doc_1, d1_fs, d1_iw)
 # d2_ifs = important_sents_of_frame(doc_2, d2_fs, d2_iw)
 
-candidates = most_similar(doc_1, 50, df)
+candidates = most_similar(doc_1, 250, df)
 
 scores = []
+
+max_score = 0
+best_sugg = ""
 
 for doc_2 in candidates :
     print("ref : ", doc_1, ", current : ", doc_2)
@@ -83,12 +90,14 @@ for doc_2 in candidates :
     d2_iw = important_tfidf_words(doc_2)
     d2_ifs = important_sents_of_frame(doc_2, d2_fs, d2_iw)
     score = compare(doc_1, d1_ifs, d1_iw, doc_2, d2_ifs, d2_iw)
-    print(score)
+    if score > max_score :
+        max_score = score
+        best_sugg = doc_2
     scores.append(score)
     print("***********************")
     print("\n")
 
-print(max(scores))
+os.system("open " + os.path.join(txt_path, doc_1[:-4] + "txt") + " " +  os.path.join(txt_path, best_sugg[:-4] + "txt"))
 
 
 # Highest tfidf-valued sentences the given frames of the reference file.
