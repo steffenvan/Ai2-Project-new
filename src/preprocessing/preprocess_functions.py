@@ -5,7 +5,6 @@ except ImportError:
 import spacy
 import os
 from segtok.segmenter import split_single, split_multi
-from path import root
 
 def load_dico(dico_name) :
     dict = {}
