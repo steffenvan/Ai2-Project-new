@@ -10,12 +10,35 @@ note : please use the following set up to make sure everything works fine :
 
 ## Data
 
-This folder should contain some files and folders found from [this link](https://drive.google.com/drive/folders/1c2yp5YUgS-OlUb5p7xIDLPlMMOVLsbIX).
+This folder should contain the files and folders found from [this link](https://drive.google.com/drive/folders/1c2yp5YUgS-OlUb5p7xIDLPlMMOVLsbIX).
+There should be a folder in the parent directory of the project repository named `data`.
+#### Retraining Semafor
+There is a large zip file containing the training data called `train.zip`. This contains the ACL data that we have used to train semafor. Any files in `xml` be used.  Place the unzipped folder in the subdirectory of `data`.
 
-Specifically these files:
-- `data.zip` (the files and folders from unzipping this one)
+#### Test data
+Test the program on untrained data by creating a folder `test` that contains the `xml` files to be tested. Run semafor on these to create the `.json` files. Next run `test.py` (We need to rename this) to find the most similar articles.    
+
+The gensim model should reside in the root directory of `data`
 - `mymodel.gsm`
 
+# Project tree
+```
+|-- project/
+|   -- data/
+|       -- corpus_words.txt
+|       -- dico.txt
+|       -- mymodel.gsm
+|       -- test/
+|       -- train/
+|   -- Ai2-Project-new/
+|       -- src/
+|           |-- Dockerfile
+|           |-- __init__.py
+|           |-- visualization/
+|           |-- frames/
+|           |-- preprocessing/
+|           |-- path.py
+```
 
 ## Similarity values:
 An abstract and its similarity values (dice, jaccard, cosine, WMD) can be shown by running `frame_similarity.py`.
