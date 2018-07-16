@@ -4,10 +4,18 @@ from pathlib import Path
 
 def correct_path(current_directory):
     current_directory = str(current_directory)
-    if ("src/preprocessing" or "src/frames" or "src/visualization") in current_directory:
+    if "src/preprocessing" in current_directory:
         current_directory = Path(current_directory).parents[1]
+
+    elif "src/frames" in current_directory:
+        current_directory = Path(current_directory).parents[1]
+
+    elif "src/visualization" in current_directory:
+        current_directory = Path(current_directory).parents[1]
+
     else:
         current_directory = Path(current_directory).parent
+
     return current_directory
 
 # Setting the correct paths to the parent folders of the project repository.
