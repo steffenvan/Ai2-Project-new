@@ -55,38 +55,37 @@ def normalized_cosine_sim(L,M) :
     return np.dot(l,m)/(np.linalg.norm(l)*np.linalg.norm(m))
 
 ######################### Dice-coefficient ##########################
-# from source https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Dice%27s_coefficient
-def dice_coefficient(a,b):
-    if not len(a) or not len(b): return 0.0
-    """ quick case for true duplicates """
+def dice_coefficient(sentence_1, sentence_2):
+    if not len(sentence_1) or not len(sentence_2): return 0.0
+    """ quick csentence_1se for true duplicates """
 
-    if a == b: return 1.0
+    if sentence_1 == sentence_2: return 1.0
 
-    """ if a != b, and a or b are single chars, then they can't possibly match """
-    if len(a) == 1 or len(b) == 1: return 0.0
+    """ if sentence_1 != sentence_2, and sentence_1 or sentence_2 are single chars, then they can't possibly match """
+    if len(sentence_1) == 1 or len(sentence_2) == 1: return 0.0
 
-    a_bigram_list = [a[i:i+2] for i in range(len(a)-1)]
-    b_bigram_list = [b[i:i+2] for i in range(len(b)-1)]
+    sentence_1_bigram_list = [sentence_1[i:i+2] for i in range(len(sentence_1)-1)]
+    sentence_2_bigram_list = [sentence_2[i:i+2] for i in range(len(sentence_2)-1)]
 
-    a_bigram_list.sort()
-    b_bigram_list.sort()
+    sentence_1_bigram_list.sort()
+    sentence_2_bigram_list.sort()
 
     # assignments to save function calls
-    len_a = len(a_bigram_list)
-    len_b = len(b_bigram_list)
+    len_sentence_1 = len(sentence_1_bigram_list)
+    len_sentence_2 = len(sentence_2_bigram_list)
     # initialize match counters
     matches = i = j = 0
-    while (i < len_a and j < len_b):
-        if a_bigram_list[i] == b_bigram_list[j]:
+    while (i < len_sentence_1 and j < len_sentence_2):
+        if sentence_1_bigram_list[i] == sentence_2_bigram_list[j]:
             matches += 2
             i += 1
             j += 1
-        elif a_bigram_list[i] < b_bigram_list[j]:
+        elif sentence_1_bigram_list[i] < sentence_2_bigram_list[j]:
             i += 1
         else:
             j += 1
 
-    score = float(matches)/float(len_a + len_b)
+    score = float(matches)/float(len_sentence_1 + len_sentence_2)
     return score
 
 ######################### tf-idf measures ##########################
