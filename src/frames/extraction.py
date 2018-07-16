@@ -1,5 +1,5 @@
 from pathlib import Path
-import sys 
+import sys
 curr_dir = Path.cwd()
 curr_file = curr_dir.joinpath(sys.argv[0])
 sys.path.append(str(Path(curr_file).parents[1]))
@@ -8,7 +8,6 @@ import json
 import string
 import os
 import pandas as pd
-
 
 """
 This file allows the extracion of only specific sections of json / txt files
@@ -34,11 +33,9 @@ def extract_text(frame) :      # given a frame, extract all the text from frameE
                     tokens_annot.append(word.lower())
 
     output["annot"] = tokens_annot
-
     output["name"] = frame["target"]["name"]
 
     return output
-
 
 def extract_with_pos(frame, nlp, to_keep = ["ADJ","NOUN"]) :
 
