@@ -1,7 +1,7 @@
 # This computes the similarity of the common frames of an abstract with all
 # the other abstracts we have.
 
-from extraction import *
+from file_content_extraction import *
 from path import *
 import operator
 from similarity_utility import *
