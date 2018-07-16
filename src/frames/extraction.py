@@ -1,4 +1,9 @@
-from path import root, parent, data_path
+from pathlib import Path
+import sys 
+curr_dir = Path.cwd()
+curr_file = curr_dir.joinpath(sys.argv[0])
+sys.path.append(str(Path(curr_file).parents[1]))
+from path import *
 import json
 import string
 import os
@@ -12,7 +17,6 @@ This file allows the extracion of only specific sections of json / txt files
 def load_dataframe(file = os.path.join(data_path,"data.pkl")) :
     df = pd.read_pickle(file)
     return df
-    
 
 def extract_text(frame) :      # given a frame, extract all the text from frameElements / spans
     tokens_annot = []
@@ -114,7 +118,7 @@ def conclusion_txt(txt_file) :
             i += 1
         end = i
         return '\n'.join(full[beg:end])
-        
+
 def extract_frame_sentence(json_filename, df = pd.DataFrame()):   # if df == "NONE" : the dataframe is loaded from its orginal location (in the data folder)
     if len(df) == 0 :                                      # else (better), specify an already loaded df
         df = load_dataframe()
