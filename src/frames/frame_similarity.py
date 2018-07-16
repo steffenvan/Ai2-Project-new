@@ -71,7 +71,7 @@ if  __name__ == "__main__" :
 
     for abstract_id in all_other_abstracts:
         current_frame_count = get_frames_count(abstract_id)
-        sim_frame_count     = element_similarity(reference_frames, current_frame_count)
+        sim_frame_count     = common_frames(reference_frames, current_frame_count)
 
         total_sim_val       = 0.0
         total_dice_val      = 0.0
@@ -101,38 +101,38 @@ if  __name__ == "__main__" :
     #             jaccard_sim   = 0.0
     #             wm_sim        = 0.0
     #             embed_cos_sim = 0.0
-    # 
+    #
     #             # Cosine similarity
     #             cos_sim            = tfidf_vector_similarity(ref_frame_and_sentence[key],
     #                                                          temp_frame_and_sentence[key])
     #             total_sim_val     += cos_sim
-    # 
+    #
     #             # dice similarity
     #             dice_sim           = dice_coefficient(ref_frame_and_sentence[key],
     #                                                   temp_frame_and_sentence[key])
     #             total_dice_val    += dice_sim
-    # 
+    #
     #             # jaccard similarity
     #             jaccard_sim        = jaccard_sim_coefficient(ref_frame_and_sentence[key],
     #                                                          temp_frame_and_sentence[key])
     #             total_jaccard_val += jaccard_sim
-    # 
+    #
     #             # Word mover distance
     #             wm_sim             = WMD(ref_frame_and_sentence[key],
     #                                      temp_frame_and_sentence[key])
     #             total_wm_val      += wm_sim
-    # 
+    #
     #             # cosine similarity between word embedding vectors
     #             embed_cos_sim      = embedding_sentence_similarity(ref_frame_and_sentence[key],
     #                                                                temp_frame_and_sentence[key])
     #             total_embed_val   += embed_cos_sim
-    # 
+    #
     #             paper_and_cos_val.update({abstract_id:total_sim_val})
     #             paper_and_dice_val.update({abstract_id:total_dice_val})
     #             paper_and_jaccard_val.update({abstract_id:total_jaccard_val})
     #             paper_and_wm_val.update({abstract_id:total_wm_val})
     #             paper_and_embeddings_cos_val.update({abstract_id:total_embed_val})
-    # 
+    #
     #             print("Similar frame: %s" % key)
     #             print("Cosine similarity: %f" % cos_sim)
     #             print("Dice coefficient: %f" % dice_sim)
@@ -140,7 +140,7 @@ if  __name__ == "__main__" :
     #             print("Word Mover similarity: %f" % wm_sim)
     #             print("Embeddings cosine similarity: %f" % embed_cos_sim)
     #             print("Reference text: %s" % ref_frame_and_sentence[key])
-    # 
+    #
     #             print("Compared text: %s\n" % temp_frame_and_sentence[key])
     #         print("Total cos value: %f" % total_sim_val)
     #         print("Total dice val: %f" % total_dice_val)
@@ -148,20 +148,20 @@ if  __name__ == "__main__" :
     #         print("Total Word Mover val: %f" % total_wm_val)
     #         print("Total embeddings cos value: %f" % total_embed_val)
     #         #print("Total sentence val: %f" % total_sent_val)
-    # 
+    #
     # #Ranking the papers from highest to lowest
     # sorted_cos          = sorted(paper_and_cos_val.items(), key=lambda x: x[1], reverse=True)
     # sorted_dice         = sorted(paper_and_dice_val.items(), key=lambda x: x[1], reverse=True)
     # sorted_jaccard      = sorted(paper_and_jaccard_val.items(), key=lambda x: x[1], reverse=True)
     # sorted_wm           = sorted(paper_and_wm_val.items(), key=lambda x: x[1], reverse=True)
     # sorted_emb_cos      = sorted(paper_and_embeddings_cos_val.items(), key=lambda x: x[1], reverse=True)
-    # 
+    #
     # best_paper_cos      = max(paper_and_cos_val.items(), key=operator.itemgetter(1))[0]
     # best_paper_dice     = max(paper_and_dice_val.items(), key=operator.itemgetter(1))[0]
     # best_paper_jaccard  = max(paper_and_jaccard_val.items(), key=operator.itemgetter(1))[0]
     # best_paper_wm       = max(paper_and_wm_val.items(), key=operator.itemgetter(1))[0]
     # best_paper_emb_cos  = max(paper_and_embeddings_cos_val.items(), key=operator.itemgetter(1))[0]
-    # 
+    #
     # print("\nPaper and Cos values:\n", sorted_cos)
     # print("\nPaper and Dice values:\n", sorted_dice)
     # print("\nPaper and Jaccard values:\n", sorted_jaccard)

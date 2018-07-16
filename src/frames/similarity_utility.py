@@ -4,21 +4,37 @@ from numpy import dot
 from numpy.linalg import norm
 import nltk
 import pandas as pd
-# from frame_similarity import get_frames_count
+# Setting the correct path to retrieve path.py
+curr_dir = Path.cwd()
+curr_file = curr_dir.joinpath(sys.argv[0])
+sys.path.append(str(Path(curr_file).parents[1]))
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from gensim.models import Word2Vec
 from scipy import spatial
 
-
 # Remember to set path to word2vec model
-path_to_model = os.path.join(data_path, "mymodel.gsm")
+path_to_model = data_path.joinpath("mymodel.gsm")
 model = Word2Vec.load(path_to_model)
 word_vectors = model.wv
 
+
+# Load the dataframe for easy use.
 def load_dataframe(file = os.path.join(data_path,"data.pkl")) :
     return (pd.read_pickle(file))
 
+# Also adding a weight the important words.
+# TODO: experiment with the weight of the important words
+def sentence_vectorize(sentence, important_words) :
+    vec = 100*[0]
+    l = 0
+    for word in sentence.split(" ") :
+        if word in model.wv.vocab :
+            vec += model[word]*(1 + 0.5*int(word in important_words))
+            l += 1 + 0.5 * int(word in important_words)
+    if l == 0 :
+        return 100*[0]
+    return [elt/l for elt in vec]
 
 def get_frames_count(id, df = pd.DataFrame()) :
     if len(df) == 0 :
@@ -26,8 +42,8 @@ def get_frames_count(id, df = pd.DataFrame()) :
     res = (df.loc[id,:]).tolist()
     return res
 
-# Computes the number elements in L and M which are non-zero at the same time
-def element_similarity(L,M):
+# Computes the number of similar frames. Finds the similar frames for two articles.
+def common_frames(L,M):
     assert len(L)==len(M)
     return sum([L[i]>0 and M[i]>0 for i in range(len(L))])
 
@@ -143,5 +159,5 @@ def most_similar(id1, topn = 50, df = pd.DataFrame()) :
         return normalized_cosine_sim(L,M)
 
     docs = [df.index[i] for i in range(len(df)) if df.index[i]!= id1]
-    
+
     return (sorted(docs, key = score, reverse = True)[:topn])
