@@ -50,8 +50,10 @@ def common_frames(L,M):
 def normalized_cosine_sim(L,M) :
     if min(sum(L),sum(M)) == 0 :
         return 0
+
     l = [elt/sum(L) for elt in L]
     m = [elt/sum(M) for elt in M]
+
     return np.dot(l,m)/(np.linalg.norm(l)*np.linalg.norm(m))
 
 ######################### Dice-coefficient ##########################
