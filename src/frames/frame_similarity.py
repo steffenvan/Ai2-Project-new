@@ -2,7 +2,6 @@
 # the other abstracts we have.
 
 from file_content_extraction import *
-from path import *
 import operator
 from similarity_utility import *
 from distance_measures import *
