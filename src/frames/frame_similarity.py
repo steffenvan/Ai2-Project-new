@@ -1,36 +1,14 @@
 # This computes the similarity of the common frames of an abstract with all
 # the other abstracts we have.
 
-from pathlib import Path
 from extraction import *
 from path import *
-import pandas as pd
 import operator
-from sklearn.feature_extraction.text import TfidfVectorizer
-
 from similarity_utility import *
+from distance_measures import *
 
-# Setting the correct paths
-data_path    = os.path.join(parent, "data/")
-json_path    = os.path.join(data_path, "json/")
-txt_path = os.path.join(data_path, "txt/")
-
-# File loading utilities
-def get_document_text(document_id):
-    format = "txt"
-    file_path = os.path.join(txt_path, str(document_id[:-4]) + format)
-    content = Path(file_path).read_text()
-    return content
-
-def load_dataframe(file = os.path.join(data_path,"data.pkl")) :
-    return (pd.read_pickle(file))
-
-def get_frames_count(id, df = pd.DataFrame()) :
-    if len(df) == 0 :
-        df = load_dataframe()
-    res = (df.loc[id,:]).tolist()
-    return res
-
+# Computes the similarity value of the full sentence of the common frames of the reference abstract
+# and all the other abstracts one by one.
 
 # Dictionary for the paper and its similarity value with the reference paper.
 paper_and_cos_val = {}
@@ -39,35 +17,13 @@ paper_and_jaccard_val = {}
 paper_and_wm_val = {}
 paper_and_embeddings_cos_val = {}
 
-def tfidf_vectorize_document(document, topn = 10):
-
-    vectorizer = TfidfVectorizer(stop_words='english')
-    vectorized_abs = vectorizer.fit_transform([document])
-    words = np.array(vectorizer.get_feature_names())
-
-    word_tfidf_val = {}
-    # Loop through the text in the document
-    for i in range(vectorized_abs.shape[0]):
-        full_text = vectorized_abs.getrow(i).toarray().ravel()
-        sorted_values = np.argsort(full_text)[::-1][:topn]
-
-        for word, tfidf in zip(words[sorted_values], full_text[sorted_values]):
-            word_tfidf_val.update({word:tfidf})
-            # print("%s - %f" %(word, tfidf))
-
-    return word_tfidf_val
-
-
-# Computes the similarity value of the full sentence of the common frames of the reference abstract
-# and all the other abstracts one by one.
-
 if  __name__ == "__main__" :
     df                     = load_dataframe()
     # reference_file         = json.load(open(json_path + str(df.index[0])))
     all_other_abstracts    = df.index[1:]
     ref_content            = get_document_text(df.index[0])
     reference_frames       = get_frames_count(df.index[0])
-    ref_frame_and_sentence = extract_frame_sentence(os.path.join(json_path, str(df.index[0])))
+    ref_frame_and_sentence = extract_frame_sentence(json_train_path.joinpath(str(df.index[0])))
 
     for abstract_id in all_other_abstracts:
         current_frame_count = get_frames_count(abstract_id)
@@ -84,7 +40,7 @@ if  __name__ == "__main__" :
             print(abstract_id, "\n")
 
             # temp_abstract           = json.load(open(json_path + str(abstract_id)))
-            temp_frame_and_sentence = extract_frame_sentence(os.path.join(json_path + str(abstract_id)))
+            temp_frame_and_sentence = extract_frame_sentence(json_train_path.joinpath(str(abstract_id)))
 
             doc_text                = get_document_text(abstract_id)
             weighted_document       = tfidf_vectorize_document(doc_text)
