@@ -5,6 +5,7 @@ import pandas as pd
 curr_dir = Path.cwd()
 curr_file = curr_dir.joinpath(sys.argv[0])
 sys.path.append(str(Path(curr_file).parents[1]))
+from distance_measures import normalized_cosine_sim
 
 from path import *
 
@@ -21,7 +22,7 @@ def load_dataframe(file = data_path.joinpath("data.pkl")) :
 
 # Also adding a weight the important words.
 # TODO: experiment with the weight of the important words
-def sentence_vectorize(sentence, important_words) :
+def sentence_vectorize(sentence, important_words, model) :
     vec = 100*[0]
     l = 0
     for word in sentence.split(" ") :
