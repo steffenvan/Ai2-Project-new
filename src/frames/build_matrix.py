@@ -60,7 +60,9 @@ def create_frame_content(filename, data_frame):
 
 def create_file_list(path_to_files, extension):
     folder            = os.listdir(path_to_files)
-    list_of_filenames = [filename for filename in folder if filename.endswith(extension)]
+    list_of_filenames = [filename for filename
+                        in folder
+                        if filename.endswith(extension)]
     return list_of_filenames
 
 def create_pickle(list_of_frames, path, pkl_filename):
