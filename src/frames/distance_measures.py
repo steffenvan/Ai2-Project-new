@@ -132,3 +132,6 @@ def WMD(sentence_1, sentence_2):
     distance = word_vectors.wmdistance(words_1, words_2)
     similarity = 1 - distance
     return similarity
+
+def cosine_sim(L, M) :
+    return np.dot(L,M)/(np.linalg.norm(L)*np.linalg.norm(M))
