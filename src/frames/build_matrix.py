@@ -71,6 +71,14 @@ def list_of_files(path_to_files, extension):
     ids = [filename for filename in folder if filename.endswith(extension)]
     return ids
 
+def create_pickle(list_of_frames, path, pkl_filename):
+    frames_text_path = path.joinpath(pkl_filename)
+    output_file = open(frames_text_path, "wb+")
+    print(output_file)
+    result = pickle.dump(list_of_frames, output_file)
+    output_file.close()
+    return result
+
 def build_matrix() :
     columns = ["ID"] + frames_to_keep
     df = pd.DataFrame(columns = columns)
@@ -92,11 +100,11 @@ def build_matrix() :
     df.set_index("ID", inplace = True)
     df.to_pickle(data_path.joinpath("data.pkl"))
 
-    frames_text_path = data_path.joinpath("frames_text.pkl")
-    output_file = open(frames_text_path, "wb+")
-    print(output_file)
-    pickle.dump(frame_content, output_file)
-    output_file.close()
+    create_pickle(frame_content, data_path, "frames_text")
+
+build_matrix()
+
+
 #
 # #
 # # def build_abs_matrix() :                    # doesn't work for now because of abstract_json()
@@ -133,4 +141,3 @@ def build_matrix() :
 # #     pickle.dump(frames_text, output_file)
 # #     output_file.close()
 #
-build_matrix()
