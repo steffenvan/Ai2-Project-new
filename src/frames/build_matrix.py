@@ -32,7 +32,7 @@ def open_json(id):
         json_data = json.loads(json_file.read())
     return json_data
 
-def valid_json_file(id):
+def is_valid(id):
     json_file = json_train_path.joinpath(id)
     if json_file.exists():
         try:
@@ -41,6 +41,31 @@ def valid_json_file(id):
             print("Invalid json file: ", id)
             return False
 
+def create_frame_content(ID):
+    frames_text = []
+    valid_file = is_valid(ID)
+
+    if valid_file:
+        d = {} ##
+        print(ID + " open")
+        full_frame = extract_full_frame(valid_file)
+
+        for sentence in valid_file:
+            temp_frame = get_frame(sentence)
+
+            if temp_frame in frames_to_keep:
+                df.loc[index, frame] += 1
+
+                if temp_frame not in d.keys():
+                    d[frame] = []
+                    test = extract_text(sentence)
+                    d.update({frame:test})
+        frames_text.append(d)
+    else:
+        os.remove(json_train_path.joinpath(ID))
+
+    return frames_text
+
 def build_matrix() :
     i = 0
     columns = ["ID"] + frames_to_keep
@@ -48,38 +73,21 @@ def build_matrix() :
     ids = [filename for filename in os.listdir(json_train_path) if filename.endswith("json")]
     total = len(ids)
     df["ID"] = ids
-    frames_text = []
     print(df["ID"])
     df.fillna(value = 0, inplace = True)
+
     for index, ID in df["ID"].iteritems():
-    # try :
         print("opening " + ID)
-        # print(i, " of ", total)
-        valid_file = valid_json_file(ID)
-        if valid_file:
-            d = {} ##
-            print(ID + " open")
-            full_frame = extract_full_frame(valid_file)
-            for sentence in valid_file:
-                temp_frame = get_frame(sentence)
-                if temp_frame in frames_to_keep:
-                    df.loc[index, frame] += 1
-                    if temp_frame not in d.keys():
-                        d[frame] = []
-                        test = extract_text(sentence)
-                        d.update({frame:test})
-            frames_text.append(d)
-            # except :
-                # print(ID + " could not be opened")
-            i += 1
-        else:
-            os.remove(json_train_path.joinpath(ID))
+        print(i, " of ", total)
+        frame_content = create_frame_content(ID)
+        i += 1
+
     df.set_index("ID", inplace = True)
     df.to_pickle(data_path.joinpath("data.pkl"))
 
     output_file = open(os.path.join(data_path,"frames_text.pkl"),"wb+")
     print(output_file)
-    pickle.dump(frames_text, output_file)
+    pickle.dump(frame_content, output_file)
     output_file.close()
 #
 # #
