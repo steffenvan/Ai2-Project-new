@@ -15,11 +15,13 @@ This script allows the creation of two files :
 
 frames_to_keep = ['Causation','Increment', 'Means', 'Aggregate','Relational_quantity', 'Evidence','Assessing','Inclusion','Usefulness','Reasoning', 'Cause_to_make_progress','Importance','Desirability', 'Evaluative_comparison', 'Performing_arts', 'Change_position_on_a_scale', 'Trust', 'Position_on_a_scale', 'Predicament', 'Supply', 'Accomplishment']
 
-def get_frame(sentence):
-    frames = []
-    for frame in sentence["frames"]:
-        frames.append(frame)
-    return frames
+    #     frames.append(frame)
+    # return frame
+
+# def get_frame_sentence(frame):
+#     file_frame = get_frame(frame)
+#     for element in file_frame:
+
 
 def open_json(filename):
     path_to_json = json_train_path.joinpath(filename)
@@ -57,9 +59,14 @@ def data_frame_init(important_frames, rows):
     data_frame.fillna(value = 0, inplace = True)
     data_frame["ID"] = rows
     # print(data_frame["ID"])
+    # print(data_frame)
     return data_frame
 
-def create_frame_content(filename, data_frame, index):
+def update_data_frame(frame, data_frame, index):
+    data_frame.loc[index, frame] += 1
+    return data_frame
+
+def create_frame_content(filename, index):
     frames_text = []
     valid_file  = is_valid(filename)
 
@@ -68,36 +75,49 @@ def create_frame_content(filename, data_frame, index):
         print(filename + " open")
 
         for sentence in valid_file:
-            temp_frame = get_frame(sentence)
-            print(temp_frame)
+            for frame in sentence["frames"]:
 
-            if temp_frame in frames_to_keep:
-                data_frame.loc[index, temp_frame] += 1
-                if temp_frame not in d:
-                    d[temp_frame] = []
-                    d[temp_frame].append(extract_text(temp_frame))
-        # frames_text.append(d)
-    else:
-        os.remove(json_train_path.joinpath(filename))
-    return d
+                frame_name = frame["target"]["name"]
+                if frame_name in frames_to_keep:
+
+                    if frame_name not in d:
+                        d[frame_name] = []
+                        d[frame_name].append(extract_text(frame))
+        frames_text.append(d)
+    # else:
+    #     os.remove(json_train_path.joinpath(filename))
+
+    return frames_text
 
 def build_matrix():
     filenames        = create_file_list(json_train_path, "json")
     total_file_count = len(filenames)
     df               = data_frame_init(frames_to_keep, filenames)
-    print(df)
     test = []
+    frames_text = []
 
     for index, filename in df["ID"].iteritems():
         print("opening " + filename)
         print(index, " of ", total_file_count)
-
-        test.append(create_frame_content(filename, df, index))
-        print(test)
+        d           = {} ##
+        valid_file  = is_valid(filename)
+        if valid_file:
+            for sentence in valid_file:
+                for frame in sentence["frames"]:
+                    frame_name = frame["target"]["name"]
+                    if frame_name in frames_to_keep:
+                        df.loc[index, frame_name] += 1
+                        print(df.loc[index,frame_name])
+                        if frame_name not in d:
+                            d[frame_name] = []
+                            d[frame_name].append(extract_text(frame))
+            frames_text.append(d)
+            # print(frames_text)
+    # test = create_frame_content(filename, index)
+        # print(test))
     df.set_index("ID", inplace = True)
     df.to_pickle(data_path.joinpath("data.pkl"))
-    print(test)
-    create_pickle(frame_content, data_path, "frames_text")
+    create_pickle(frames_text, data_path, "frames_text")
 
 build_matrix()
 

@@ -41,7 +41,7 @@ def extract_text(frame) :      # given a frame, extract all the text from frameE
 
     output["annot"] = tokens_annot
     output["name"] = frame["target"]["name"]
-
+    
     return output
 
 def extract_with_pos(frame, nlp, to_keep = ["ADJ","NOUN"]) :
