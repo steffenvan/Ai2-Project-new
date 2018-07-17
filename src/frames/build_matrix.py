@@ -16,8 +16,10 @@ This script allows the creation of two files :
 frames_to_keep = ['Causation','Increment', 'Means', 'Aggregate','Relational_quantity', 'Evidence','Assessing','Inclusion','Usefulness','Reasoning', 'Cause_to_make_progress','Importance','Desirability', 'Evaluative_comparison', 'Performing_arts', 'Change_position_on_a_scale', 'Trust', 'Position_on_a_scale', 'Predicament', 'Supply', 'Accomplishment']
 
 def get_frame(sentence):
+    frames = []
     for frame in sentence["frames"]:
-        return frame
+        frames.append(frame)
+    return frames
 
 def open_json(filename):
     path_to_json = json_train_path.joinpath(filename)
@@ -34,30 +36,6 @@ def is_valid(filename):
             print("Invalid json file: ", filename)
             return False
 
-def create_frame_content(filename, data_frame):
-    frames_text = []
-    d           = {} ##
-    valid_file  = is_valid(filename)
-
-    if valid_file:
-        print(filename + " open")
-
-        for sentence in valid_file:
-            temp_frame = get_frame(sentence)
-
-            if temp_frame in frames_to_keep:
-                data_frame.loc[index, frame] += 1
-
-                if temp_frame not in d.keys():
-                    d[frame] = []
-                    test     = extract_text(sentence)
-                    d.update({frame:test})
-    else:
-        os.remove(json_train_path.joinpath(filename))
-    frames_text.append(d)
-
-    return frames_text
-
 def create_file_list(path_to_files, extension):
     folder            = os.listdir(path_to_files)
     list_of_filenames = [filename for filename
@@ -69,7 +47,7 @@ def create_pickle(list_of_frames, path, pkl_filename):
     frames_text_path = path.joinpath(pkl_filename)
     output_file      = open(frames_text_path, "wb+")
     result           = pickle.dump(list_of_frames, output_file)
-    print(output_file)
+    # print(output_file)
     output_file.close()
     return result
 
@@ -78,24 +56,47 @@ def data_frame_init(important_frames, rows):
     data_frame       = pd.DataFrame(columns = columns)
     data_frame.fillna(value = 0, inplace = True)
     data_frame["ID"] = rows
-    print(data_frame["ID"])
+    # print(data_frame["ID"])
     return data_frame
+
+def create_frame_content(filename, data_frame, index):
+    frames_text = []
+    valid_file  = is_valid(filename)
+
+    if valid_file:
+        d           = {} ##
+        print(filename + " open")
+
+        for sentence in valid_file:
+            temp_frame = get_frame(sentence)
+            print(temp_frame)
+
+            if temp_frame in frames_to_keep:
+                data_frame.loc[index, temp_frame] += 1
+                if temp_frame not in d:
+                    d[temp_frame] = []
+                    d[temp_frame].append(extract_text(temp_frame))
+        # frames_text.append(d)
+    else:
+        os.remove(json_train_path.joinpath(filename))
+    return d
 
 def build_matrix():
     filenames        = create_file_list(json_train_path, "json")
     total_file_count = len(filenames)
     df               = data_frame_init(frames_to_keep, filenames)
-    count            = 0
+    print(df)
+    test = []
 
-    for index, ID in df["ID"].iteritems():
-        print("opening " + ID)
-        print(count, " of ", total_file_count)
-        frame_content = create_frame_content(ID, df)
-        count += 1
+    for index, filename in df["ID"].iteritems():
+        print("opening " + filename)
+        print(index, " of ", total_file_count)
 
+        test.append(create_frame_content(filename, df, index))
+        print(test)
     df.set_index("ID", inplace = True)
     df.to_pickle(data_path.joinpath("data.pkl"))
-
+    print(test)
     create_pickle(frame_content, data_path, "frames_text")
 
 build_matrix()
