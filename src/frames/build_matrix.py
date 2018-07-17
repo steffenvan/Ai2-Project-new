@@ -84,7 +84,7 @@ def build_matrix() :
     filenames        = list_of_files(json_train_path, "json")
     total_file_count = len(filenames)
     df               = data_frame_init(frames_to_keep, filenames)
-    count = 0
+    count            = 0
 
     for index, ID in df["ID"].iteritems():
         print("opening " + ID)
