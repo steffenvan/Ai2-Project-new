@@ -21,11 +21,6 @@ def get_frame(sentence):
     for frame in sentence["frames"]:
         return frame
 
-def extract_full_frame(json_content):
-    for sentence in json_content:
-        for frame in sentence["frames"]:
-            return frame
-
 def open_json(id):
     path_to_json = json_train_path.joinpath(id)
     with open(path_to_json) as json_file:
@@ -43,12 +38,11 @@ def is_valid(id):
 
 def create_frame_content(file_id, data_frame):
     frames_text = []
+    d = {} ##
     valid_file = is_valid(file_id)
 
     if valid_file:
-        d = {} ##
         print(file_id + " open")
-        full_frame = extract_full_frame(valid_file)
 
         for sentence in valid_file:
             temp_frame = get_frame(sentence)
@@ -60,10 +54,9 @@ def create_frame_content(file_id, data_frame):
                     d[frame] = []
                     test = extract_text(sentence)
                     d.update({frame:test})
-        frames_text.append(d)
     else:
         os.remove(json_train_path.joinpath(file_id))
-
+    frames_text.append(d)
     return frames_text
 
 def list_of_files(path_to_files, extension):
@@ -79,18 +72,20 @@ def create_pickle(list_of_frames, path, pkl_filename):
     output_file.close()
     return result
 
+def data_frame_init(important_frames, rows):
+    columns = ["ID"] + important_frames
+    data_frame = pd.DataFrame(columns = columns)
+    data_frame.fillna(value = 0, inplace = True)
+    data_frame["ID"] = rows
+    print(data_frame["ID"])
+    return data_frame
+
 def build_matrix() :
-    columns = ["ID"] + frames_to_keep
-    df = pd.DataFrame(columns = columns)
-
-    filenames = list_of_files(json_train_path, "json")
+    filenames        = list_of_files(json_train_path, "json")
     total_file_count = len(filenames)
-
-    df["ID"] = filenames
-    print(df["ID"])
-    df.fillna(value = 0, inplace = True)
-
+    df               = data_frame_init(frames_to_keep, filenames)
     count = 0
+
     for index, ID in df["ID"].iteritems():
         print("opening " + ID)
         print(count, " of ", total_file_count)
