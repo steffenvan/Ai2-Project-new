@@ -1,12 +1,12 @@
 from pathlib import Path
 import sys
+import os
 curr_dir = Path.cwd()
 curr_file = curr_dir.joinpath(sys.argv[0])
 sys.path.append(str(Path(curr_file).parents[1]))
 from path import *
 import json
 import string
-import os
 import pandas as pd
 
 """
@@ -17,6 +17,12 @@ def load_dataframe(file = os.path.join(data_path,"data.pkl")) :
     df = pd.read_pickle(file)
     return df
 
+def inside_json_content(frame):
+
+    if len(frame["annotationSets"][0]["frameElements"]) :
+        for element in frame["annotationSets"][0]["frameElements"] :
+            return element
+
 def extract_text(frame) :      # given a frame, extract all the text from frameElements / spans
     tokens_annot = []
     tokens_name = []
@@ -24,13 +30,12 @@ def extract_text(frame) :      # given a frame, extract all the text from frameE
     output  = {}
     tokens_target = list(map(str.lower,frame["target"]["spans"][0]["text"].split()))
     output["target"] = tokens_target
+    unwanted_info = ["<","newsection", ">","abstract"]
+    inside_json = inside_json_content(frame)
 
-    if len(frame["annotationSets"][0]["frameElements"]) :
-        for elt in frame["annotationSets"][0]["frameElements"] :
-            # print(elt["spans"][0]["text"])
-            for word in elt["spans"][0]["text"].split(" ") :
-                if word.lower() not in ["<","newsection", ">","abstract"] :
-                    tokens_annot.append(word.lower())
+    for word in inside_json["spans"][0]["text"].split(" "):
+        if word.lower() not in unwanted_info:
+            tokens_annot.append(word.lower())
 
     output["annot"] = tokens_annot
     output["name"] = frame["target"]["name"]
@@ -122,7 +127,7 @@ def extract_frame_sentence(json_filename, df = pd.DataFrame()):   # if df == "NO
     json_object = json.load(open(json_filename))
     sentence = ""
     frame_and_sentence = {}
-    for list_of_frames in json_object :
+    for list_of_frames in json_object:
         for frame in list_of_frames["frames"]:
             if frame["target"]["name"] in df.columns:
                 sentence = " ".join(list_of_frames["tokens"])
