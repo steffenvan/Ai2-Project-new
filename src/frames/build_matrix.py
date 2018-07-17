@@ -41,20 +41,20 @@ def is_valid(id):
             print("Invalid json file: ", id)
             return False
 
-def create_frame_content(ID):
+def create_frame_content(file_id, data_frame):
     frames_text = []
-    valid_file = is_valid(ID)
+    valid_file = is_valid(file_id)
 
     if valid_file:
         d = {} ##
-        print(ID + " open")
+        print(file_id + " open")
         full_frame = extract_full_frame(valid_file)
 
         for sentence in valid_file:
             temp_frame = get_frame(sentence)
 
             if temp_frame in frames_to_keep:
-                df.loc[index, frame] += 1
+                data_frame.loc[index, frame] += 1
 
                 if temp_frame not in d.keys():
                     d[frame] = []
@@ -62,30 +62,38 @@ def create_frame_content(ID):
                     d.update({frame:test})
         frames_text.append(d)
     else:
-        os.remove(json_train_path.joinpath(ID))
+        os.remove(json_train_path.joinpath(file_id))
 
     return frames_text
 
+def list_of_files(path_to_files, extension):
+    folder = os.listdir(path_to_files)
+    ids = [filename for filename in folder if filename.endswith(extension)]
+    return ids
+
 def build_matrix() :
-    i = 0
     columns = ["ID"] + frames_to_keep
     df = pd.DataFrame(columns = columns)
-    ids = [filename for filename in os.listdir(json_train_path) if filename.endswith("json")]
-    total = len(ids)
-    df["ID"] = ids
+
+    filenames = list_of_files(json_train_path, "json")
+    total_file_count = len(filenames)
+
+    df["ID"] = filenames
     print(df["ID"])
     df.fillna(value = 0, inplace = True)
 
+    count = 0
     for index, ID in df["ID"].iteritems():
         print("opening " + ID)
-        print(i, " of ", total)
-        frame_content = create_frame_content(ID)
-        i += 1
+        print(count, " of ", total_file_count)
+        frame_content = create_frame_content(ID, df)
+        count += 1
 
     df.set_index("ID", inplace = True)
     df.to_pickle(data_path.joinpath("data.pkl"))
 
-    output_file = open(os.path.join(data_path,"frames_text.pkl"),"wb+")
+    frames_text_path = data_path.joinpath("frames_text.pkl")
+    output_file = open(frames_text_path, "wb+")
     print(output_file)
     pickle.dump(frame_content, output_file)
     output_file.close()
