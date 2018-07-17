@@ -18,24 +18,26 @@ def load_dataframe(file = os.path.join(data_path,"data.pkl")) :
     return df
 
 def inside_json_content(frame):
-
+    list_of_element = []
     if len(frame["annotationSets"][0]["frameElements"]) :
         for element in frame["annotationSets"][0]["frameElements"] :
-            return element
+            list_of_element.append(element)
+    return list_of_element
 
 def extract_text(frame) :      # given a frame, extract all the text from frameElements / spans
     tokens_annot = []
     tokens_name = []
     tokens_target = []
     output  = {}
-    tokens_target = list(map(str.lower,frame["target"]["spans"][0]["text"].split()))
+    tokens_target = list(map(str.lower, frame["target"]["spans"][0]["text"].split()))
     output["target"] = tokens_target
     unwanted_info = ["<","newsection", ">","abstract"]
-    inside_json = inside_json_content(frame)
+    list_of_element = inside_json_content(frame)
 
-    for word in inside_json["spans"][0]["text"].split(" "):
-        if word.lower() not in unwanted_info:
-            tokens_annot.append(word.lower())
+    for element in list_of_element:
+        for word in element["spans"][0]["text"].split(" "):
+            if word.lower() not in unwanted_info:
+                tokens_annot.append(word.lower())
 
     output["annot"] = tokens_annot
     output["name"] = frame["target"]["name"]
