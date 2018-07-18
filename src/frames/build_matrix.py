@@ -33,7 +33,9 @@ def is_valid(filename):
     json_file = json_train_path.joinpath(filename)
     if json_file.exists():
         try:
-            return open_json(json_file)
+            test = open_json(json_file)
+            print(test)
+            return test
         except:
             print("Invalid json file: ", filename)
             return False
@@ -65,7 +67,7 @@ def data_frame_init(important_frames, rows):
 def update_data_frame(frame, data_frame, index):
     data_frame.loc[index, frame] += 1
     return data_frame
-# 
+#
 # def create_frame_content(filename, index):
 #     frames_text = []
 #     valid_file  = is_valid(filename)
@@ -89,35 +91,41 @@ def update_data_frame(frame, data_frame, index):
 #
 #     return frames_text
 
-def build_matrix():
-    filenames        = create_file_list(json_train_path, "json")
-    total_file_count = len(filenames)
-    df               = data_frame_init(frames_to_keep, filenames)
-    test = []
-    frames_text = []
 
-    for index, filename in df["ID"].iteritems():
-        print("opening " + filename)
-        print(index, " of ", total_file_count)
-        d           = {} ##
-        valid_file  = is_valid(filename)
-        if valid_file:
-            for sentence in valid_file:
-                for frame in sentence["frames"]:
-                    frame_name = frame["target"]["name"]
-                    if frame_name in frames_to_keep:
-                        df.loc[index, frame_name] += 1
-                        print(df.loc[index,frame_name])
-                        if frame_name not in d:
-                            d[frame_name] = []
-                            d[frame_name].append(extract_text(frame))
+def build_matrix():
+    i = 0
+    columns = ["ID"] + frames_to_keep
+    df = pd.DataFrame(columns = columns)
+    ids = [filename for filename in os.listdir(json_train_path) if filename.endswith("json")]
+    total = len(ids)
+    df["ID"] = ids
+    frames_text = []
+    df.fillna(value = 0, inplace = True)
+    for index, ID in df["ID"].iteritems():
+        try :
+            print("opening " + ID)
+            print(i, " on ", total)
+            data = is_valid(ID)
+            d = {} ##
+            print(ID + " open")
+            for sentence in data :
+                for frame in sentence["frames"] :
+                    if frame["target"]["name"] in frames_to_keep :
+                        df.loc[index,frame["target"]["name"]] += 1
+                        print(df.loc[index,frame["target"]["name"]])
+                        if frame["target"]["name"] not in d :
+                            d[frame["target"]["name"]] = []
+                            d[frame["target"]["name"]].append(extract_text(frame))
             frames_text.append(d)
-            # print(frames_text)
-    # test = create_frame_content(filename, index)
-        # print(test))
+        except :
+            print(ID + " could not be opened")
+        i += 1
     df.set_index("ID", inplace = True)
-    df.to_pickle(data_path.joinpath("data.pkl"))
-    create_pickle(frames_text, data_path, "frames_text")
+    df.to_pickle(os.path.join(data_path,"data.pkl"))
+
+    output_file = open(os.path.join(data_path,"frames_text.pkl"),"wb+")
+    pickle.dump(frames_text, output_file)
+    output_file.close()
 
 build_matrix()
 
