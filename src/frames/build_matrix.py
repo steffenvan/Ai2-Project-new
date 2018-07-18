@@ -65,29 +65,29 @@ def data_frame_init(important_frames, rows):
 def update_data_frame(frame, data_frame, index):
     data_frame.loc[index, frame] += 1
     return data_frame
-
-def create_frame_content(filename, index):
-    frames_text = []
-    valid_file  = is_valid(filename)
-
-    if valid_file:
-        d           = {} ##
-        print(filename + " open")
-
-        for sentence in valid_file:
-            for frame in sentence["frames"]:
-
-                frame_name = frame["target"]["name"]
-                if frame_name in frames_to_keep:
-
-                    if frame_name not in d:
-                        d[frame_name] = []
-                        d[frame_name].append(extract_text(frame))
-        frames_text.append(d)
-    # else:
-    #     os.remove(json_train_path.joinpath(filename))
-
-    return frames_text
+# 
+# def create_frame_content(filename, index):
+#     frames_text = []
+#     valid_file  = is_valid(filename)
+#
+#     if valid_file:
+#         d           = {} ##
+#         print(filename + " open")
+#
+#         for sentence in valid_file:
+#             for frame in sentence["frames"]:
+#
+#                 frame_name = frame["target"]["name"]
+#                 if frame_name in frames_to_keep:
+#
+#                     if frame_name not in d:
+#                         d[frame_name] = []
+#                         d[frame_name].append(extract_text(frame))
+#         frames_text.append(d)
+#     # else:
+#     #     os.remove(json_train_path.joinpath(filename))
+#
+#     return frames_text
 
 def build_matrix():
     filenames        = create_file_list(json_train_path, "json")
