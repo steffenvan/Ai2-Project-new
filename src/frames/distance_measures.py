@@ -6,36 +6,19 @@ curr_dir = Path.cwd()
 curr_file = curr_dir.joinpath(sys.argv[0])
 sys.path.append(str(Path(curr_file).parents[1]))
 from path import *
-
+from math import sqrt, isnan
 import numpy as np
 import nltk
 from sklearn.feature_extraction.text import TfidfVectorizer
 from gensim.models import Word2Vec
 from scipy import spatial
-
+from tfidf_functions import *
 # Remember to set path to word2vec model. Using os.path.join because of a bug
 # in posixpath.
-path_to_model = os.path.join(data_path, "mymodel.gsm")
-model = Word2Vec.load(path_to_model)
-word_vectors = model.wv
+# path_to_model = os.path.join(data_path, "mymodel.gsm")
+# model = Word2Vec.load(path_to_model)
+# word_vectors = model.wv
 
-def tfidf_vectorize_document(document, topn = 10):
-
-    vectorizer = TfidfVectorizer(stop_words='english')
-    vectorized_abs = vectorizer.fit_transform([document])
-    words = np.array(vectorizer.get_feature_names())
-
-    word_tfidf_val = {}
-    # Loop through the text in the document
-    for i in range(vectorized_abs.shape[0]):
-        full_text = vectorized_abs.getrow(i).toarray().ravel()
-        sorted_values = np.argsort(full_text)[::-1][:topn]
-
-        for word, tfidf in zip(words[sorted_values], full_text[sorted_values]):
-            word_tfidf_val.update({word:tfidf})
-            # print("%s - %f" %(word, tfidf))
-
-    return word_tfidf_val
 
 ######################### Dice-coefficient ##########################
 def dice_coefficient(sentence_1, sentence_2):
@@ -44,7 +27,7 @@ def dice_coefficient(sentence_1, sentence_2):
 
     if sentence_1 == sentence_2: return 1.0
 
-    """ if sentence_1 != sentence_2, and sentence_1 or sentence_2 are single chars, then they can't possibly match """
+    """ if sentence_1 != sentence_2, and sentence_1 or sentence_2 are single chars, then can't possibly match """
     if len(sentence_1) == 1 or len(sentence_2) == 1: return 0.0
 
     sentence_1_bigram_list = [sentence_1[i:i+2] for i in range(len(sentence_1)-1)]
@@ -105,6 +88,34 @@ def avg_sentence_vector(words, model, num_features, index2word_set):
     if nwords>0:
         featureVec = np.divide(featureVec, nwords)
     return featureVec
+    
+def sent_to_vec(sentence, file, map_file, vocabulary, X, wv_model) :
+    words = sentence.split(" ")
+    tfidfs = [tfidf_value(word.lower(), file, map_file, vocabulary, X) for word in words if word.lower() in vocabulary]
+    sentence_vector = np.zeros(100)
+    if len(tfidfs) == 0 :
+        return sentence_vector
+    # trigger = sum(tfidfs)/len(tfidfs)
+    trigger = 0.2
+    # print(trigger)
+    i = 0
+    
+    for word in words :
+        word = word.lower()
+        if word in vocabulary and word in wv_model :
+
+            word_tfidf = tfidf_value(word, file, map_file, vocabulary, X)
+            if word_tfidf > trigger :
+            # print(word_tfidf)
+                i += 1
+                word_vector = wv_model[word]
+                sentence_vector = np.add(sentence_vector, [word_tfidf*coord for coord in word_vector])
+    if i == 0 :
+        return sentence_vector
+    return [coord/i for coord in sentence_vector]
+            
+            
+    
 
 def embedding_sentence_similarity(sentence_1, sentence_2):
     sent1 = sentence_1.split()
@@ -121,8 +132,10 @@ def normalized_cosine_sim(L,M) :
 
     l = [elt/sum(L) for elt in L]
     m = [elt/sum(M) for elt in M]
-
-    return np.dot(l,m)/(np.linalg.norm(l)*np.linalg.norm(m))
+    value = np.dot(l,m)/(np.linalg.norm(l)*np.linalg.norm(m))
+    if isnan(value) :
+        return 0 
+    return value
 
 ######################### word mover distance measure ##########################
 
