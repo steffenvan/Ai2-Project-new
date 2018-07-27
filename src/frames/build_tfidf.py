@@ -28,13 +28,13 @@ for file in file_names :
     map_file.update({file[:-4] : i})
     i += 1
     
-vectorizer = TfidfVectorizer(stop_words = "english")
+vectorizer = TfidfVectorizer(stop_words = "english", ngram_range=(3,3))
 
 X = vectorizer.fit_transform(file_objects)
 
 object = [vectorizer, X, map_file]
     
-with open(os.path.join(data_path, "tfidf.pkl"), "wb+") as f :
+with open(os.path.join(data_path, "tfidf3grams.pkl"), "wb+") as f :
     pickle.dump(object, f, pickle.HIGHEST_PROTOCOL)
 
 # with open(os.path.join("tfidf.pkl"), "rb") as f2 :
