@@ -13,11 +13,13 @@ import pandas as pd
 This file allows the extracion of only specific sections of json / txt files
 """
 
+frames_to_keep = ['Causation','Increment', 'Means', 'Aggregate','Relational_quantity', 'Evidence','Assessing','Inclusion','Usefulness','Reasoning', 'Cause_to_make_progress','Importance','Desirability', 'Evaluative_comparison', 'Performing_arts', 'Change_position_on_a_scale', 'Trust', 'Position_on_a_scale', 'Predicament', 'Supply']
+
 def load_dataframe(file = os.path.join(data_path,"data.pkl")) :
     df = pd.read_pickle(file)
     return df
 
-def inside_json_content(frame):
+def inside_json_content(frame) :
     list_of_element = []
     if len(frame["annotationSets"][0]["frameElements"]) :
         for element in frame["annotationSets"][0]["frameElements"] :
@@ -123,20 +125,48 @@ def conclusion_txt(txt_file) :
         end = i
         return '\n'.join(full[beg:end])
 
-def extract_frame_sentence(json_filename, df = pd.DataFrame()):   # if df == "NONE" : the dataframe is loaded from its orginal location (in the data folder)
-    if len(df) == 0 :                                      # else (better), specify an already loaded df
-        df = load_dataframe()
-    json_object = json.load(open(json_filename))
+# Returns a dictionnary with the frame names as keys and a list of sentences containing occurences of that frame as values
+
+def sents_by_frame(doc_id, train):   # if df == "NONE" : the dataframe is loaded from its orginal 
+    json_object = json.load(open(get_path(doc_id, True, train)))
     sentence = ""
-    frame_and_sentence = {}
-    for list_of_frames in json_object:
+    output = {}
+    for list_of_frames in json_object :
         for frame in list_of_frames["frames"]:
-            if frame["target"]["name"] in df.columns:
+            # if frame["target"]["name"] in df.columns:
+            if frame["target"]["name"] in frames_to_keep :
                 sentence = " ".join(list_of_frames["tokens"])
                 key = frame["target"]["name"]
-                if key not in frame_and_sentence :
-                    frame_and_sentence.update({key : [sentence]})
+                if key not in output :
+                    output.update({key : [sentence]})
                 else :
-                    if sentence not in frame_and_sentence[key] :
-                        frame_and_sentence[key].append(sentence)
-    return frame_and_sentence
+                    if sentence not in output[key] :
+                        output[key].append(sentence)
+    return output
+    
+def important_sents_by_frame(doc_id, train, n_max = 5) :
+    frame_sentences = sents_by_frame(doc_id, train)
+    output = {}
+    for frame_name in frame_sentences.keys() :
+        temp_dict = {}  # maps the tfidf values to each sentence containing "frame_name"
+        sentences = frame_sentences[frame_name]
+        for sentence in sentences :
+            mean = 0
+            word_counter = 0
+            for word in sentence.split(" ") :
+                try :
+                    mean += tfidf_value(word.lower(), get_path(doc_id, False, train), map_file, vocabulary, X)
+                    word_counter += 1.0
+                except :
+                    a = 0
+            if word_counter == 0 :
+                mean = 0
+            else :
+                mean /= word_counter
+            temp_dict.update({mean : sentence})
+        L = []       # list of the sentences to keep
+        sorted_keys = sorted(list(temp_dict.keys()), reverse = True)
+        for key in sorted_keys[:n_max] :
+            L.append(temp_dict[key])
+        output.update({frame_name : L})
+    return output
